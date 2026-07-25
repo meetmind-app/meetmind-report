@@ -1,13 +1,17 @@
-/**
- * Executive Slide Engine
- * Public API
- *
- * This file is the only entry point of the engine.
- * The Web Report must interact only with this module.
- */
+import { normalizeReport } from "./schema.js";
+import { getEnabledBlocks } from "./block-registry.js";
+import { createLayout } from "./layout-engine.js";
 
 export async function generate(reportJson, options = {}) {
-    throw new Error(
-        "Executive Slide Engine is not implemented yet."
-    );
+    const report = normalizeReport(reportJson);
+
+    const blocks = getEnabledBlocks(options);
+
+    const layout = createLayout(blocks);
+
+    return {
+        report,
+        blocks,
+        layout
+    };
 }
