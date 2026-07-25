@@ -3,255 +3,412 @@
  * Executive Slide Engine
  *
  * Layout Engine v1
+ *
+ * Visual hierarchy:
+ *
+ * Level 1:
+ * Executive Summary + Key Metrics
+ *
+ * Level 2:
+ * Decisions + Tasks + Risks + Insights
+ *
+ * Level 3:
+ * Architecture
+ *
+ * Service information:
+ * Owners + Meeting Statistics
  */
 
-(function (global) {
+(function initializeLayoutEngine(global) {
     'use strict';
 
     const engine = global.ExecutiveSlideEngine || {};
 
     const PAGE = {
-
         width: 842,
         height: 595,
 
         margin: {
-            top: 32,
+            top: 28,
             right: 32,
-            bottom: 32,
+            bottom: 24,
             left: 32
         },
 
-        gap: 16,
-
-        columnGap: 16
-
+        gap: 10,
+        columnGap: 12
     };
 
+    const CONTENT_WIDTH =
+        PAGE.width -
+        PAGE.margin.left -
+        PAGE.margin.right;
+
+    const FOOTER_HEIGHT = 18;
+
+    /**
+     * Creates the complete one-page Executive Slide layout.
+     *
+     * Coordinates use top-left origin.
+     *
+     * @param {Object} report
+     * @param {Array<{id: string}>} blocks
+     * @returns {{
+     *   page: Object,
+     *   blocks: Array<Object>
+     * }}
+     */
     function createLayout(report, blocks) {
-
-        const contentWidth =
-            PAGE.width -
-            PAGE.margin.left -
-            PAGE.margin.right;
-
-        const leftWidth = Math.floor((contentWidth - PAGE.columnGap) * 0.65);
-
-        const rightWidth =
-            contentWidth -
-            leftWidth -
-            PAGE.columnGap;
+        const layout = [];
 
         let y = PAGE.margin.top;
 
-        const layout = [];
+        const footerY =
+            PAGE.height -
+            PAGE.margin.bottom -
+            FOOTER_HEIGHT;
 
-        // ----------------------------
-        // HEADER
-        // ----------------------------
+        // -----------------------------------------
+        // DOCUMENT HEADER
+        // -----------------------------------------
 
-        addFull('header', 64);
-
-        addFull('stats', 36);
-
-        addFull('summary', estimateSummaryHeight(report));
-
-        // ----------------------------
-        // TWO COLUMN AREA
-        // ----------------------------
-
-        let leftY = y;
-        let rightY = y;
-
-        [
-            'decisions',
-            'tasks',
-            'risks',
-            'insights'
-        ].forEach(id => {
-
-            if (!exists(id)) return;
-
-            layout.push({
-
-                id,
-
+        if (exists('header')) {
+            addBlock({
+                id: 'header',
                 x: PAGE.margin.left,
-
-                y: leftY,
-
-                width: leftWidth,
-
-                height: estimateBlockHeight(id, report)
-
+                y,
+                width: CONTENT_WIDTH,
+                height: 46,
+                level: 0,
+                role: 'document'
             });
 
-            leftY +=
-                estimateBlockHeight(id, report) +
-                PAGE.gap;
+            y += 46 + PAGE.gap;
+        }
 
+        // -----------------------------------------
+        // LEVEL 1
+        // SUMMARY + KEY METRICS
+        // -----------------------------------------
+
+        const hasSummary = exists('summary');
+        const hasMetrics = exists('metrics');
+
+        if (hasSummary || hasMetrics) {
+            const heroHeight = estimateHeroHeight(report);
+
+            if (hasSummary && hasMetrics) {
+                const summaryWidth = Math.round(
+                    (CONTENT_WIDTH - PAGE.columnGap) * 0.67
+                );
+
+                const metricsWidth =
+                    CONTENT_WIDTH -
+                    summaryWidth -
+                    PAGE.columnGap;
+
+                addBlock({
+                    id: 'summary',
+                    x: PAGE.margin.left,
+                    y,
+                    width: summaryWidth,
+                    height: heroHeight,
+                    level: 1,
+                    role: 'primary'
+                });
+
+                addBlock({
+                    id: 'metrics',
+                    x:
+                        PAGE.margin.left +
+                        summaryWidth +
+                        PAGE.columnGap,
+                    y,
+                    width: metricsWidth,
+                    height: heroHeight,
+                    level: 1,
+                    role: 'primary'
+                });
+            } else {
+                addBlock({
+                    id: hasSummary ? 'summary' : 'metrics',
+                    x: PAGE.margin.left,
+                    y,
+                    width: CONTENT_WIDTH,
+                    height: heroHeight,
+                    level: 1,
+                    role: 'primary'
+                });
+            }
+
+            y += heroHeight + PAGE.gap;
+        }
+
+        // -----------------------------------------
+        // LEVEL 2
+        // DECISIONS / TASKS / RISKS / INSIGHTS
+        // -----------------------------------------
+
+        const coreRows = [
+            ['decisions', 'tasks'],
+            ['risks', 'insights']
+        ];
+
+        coreRows.forEach(rowIds => {
+            const visibleIds = rowIds.filter(exists);
+
+            if (visibleIds.length === 0) {
+                return;
+            }
+
+            const rowHeight = Math.max(
+                ...visibleIds.map(id =>
+                    estimateCoreHeight(id, report)
+                )
+            );
+
+            if (visibleIds.length === 1) {
+                addBlock({
+                    id: visibleIds[0],
+                    x: PAGE.margin.left,
+                    y,
+                    width: CONTENT_WIDTH,
+                    height: rowHeight,
+                    level: 2,
+                    role: 'core'
+                });
+            } else {
+                const columnWidth =
+                    (CONTENT_WIDTH - PAGE.columnGap) / 2;
+
+                addBlock({
+                    id: visibleIds[0],
+                    x: PAGE.margin.left,
+                    y,
+                    width: columnWidth,
+                    height: rowHeight,
+                    level: 2,
+                    role: 'core'
+                });
+
+                addBlock({
+                    id: visibleIds[1],
+                    x:
+                        PAGE.margin.left +
+                        columnWidth +
+                        PAGE.columnGap,
+                    y,
+                    width: columnWidth,
+                    height: rowHeight,
+                    level: 2,
+                    role: 'core'
+                });
+            }
+
+            y += rowHeight + PAGE.gap;
         });
 
-        [
+        // -----------------------------------------
+        // LEVEL 3
+        // ARCHITECTURE
+        // -----------------------------------------
+
+        if (exists('architecture')) {
+            const architectureHeight =
+                estimateArchitectureHeight(report);
+
+            addBlock({
+                id: 'architecture',
+                x: PAGE.margin.left,
+                y,
+                width: CONTENT_WIDTH,
+                height: architectureHeight,
+                level: 3,
+                role: 'supporting'
+            });
+
+            y += architectureHeight + PAGE.gap;
+        }
+
+        // -----------------------------------------
+        // SERVICE INFORMATION
+        // OWNERS + MEETING STATISTICS
+        // -----------------------------------------
+
+        const serviceIds = [
             'owners',
-            'architecture',
-            'metrics'
-        ].forEach(id => {
+            'stats'
+        ].filter(exists);
 
-            if (!exists(id)) return;
+        if (serviceIds.length > 0) {
+            const serviceHeight = estimateServiceHeight(
+                report,
+                footerY - y
+            );
 
-            layout.push({
+            if (serviceIds.length === 1) {
+                addBlock({
+                    id: serviceIds[0],
+                    x: PAGE.margin.left,
+                    y,
+                    width: CONTENT_WIDTH,
+                    height: serviceHeight,
+                    level: 4,
+                    role: 'service'
+                });
+            } else {
+                const columnWidth =
+                    (CONTENT_WIDTH - PAGE.columnGap) / 2;
 
-                id,
+                addBlock({
+                    id: serviceIds[0],
+                    x: PAGE.margin.left,
+                    y,
+                    width: columnWidth,
+                    height: serviceHeight,
+                    level: 4,
+                    role: 'service'
+                });
 
-                x:
-                    PAGE.margin.left +
-                    leftWidth +
-                    PAGE.columnGap,
+                addBlock({
+                    id: serviceIds[1],
+                    x:
+                        PAGE.margin.left +
+                        columnWidth +
+                        PAGE.columnGap,
+                    y,
+                    width: columnWidth,
+                    height: serviceHeight,
+                    level: 4,
+                    role: 'service'
+                });
+            }
+        }
 
-                y: rightY,
-
-                width: rightWidth,
-
-                height: estimateBlockHeight(id, report)
-
-            });
-
-            rightY +=
-                estimateBlockHeight(id, report) +
-                PAGE.gap;
-
-        });
-
-        y = Math.max(leftY, rightY);
-
-        // ----------------------------
-        // FOOTER
-        // ----------------------------
+        // -----------------------------------------
+        // FIXED FOOTER
+        // -----------------------------------------
 
         if (exists('footer')) {
-
-            layout.push({
-
+            addBlock({
                 id: 'footer',
-
                 x: PAGE.margin.left,
-
-                y,
-
-                width: contentWidth,
-
-                height: 24
-
+                y: footerY,
+                width: CONTENT_WIDTH,
+                height: FOOTER_HEIGHT,
+                level: 0,
+                role: 'document'
             });
-
         }
 
         return {
-
             page: PAGE,
-
-            blocks: layout
-
+            blocks: layout,
+            contentBottom: footerY
         };
 
-        // ----------------------------
-
-        function addFull(id, height) {
-
-            if (!exists(id)) return;
-
-            layout.push({
-
-                id,
-
-                x: PAGE.margin.left,
-
-                y,
-
-                width: contentWidth,
-
-                height
-
-            });
-
-            y += height + PAGE.gap;
-
-        }
-
         function exists(id) {
-
-            return blocks.some(b => b.id === id);
-
+            return blocks.some(block => block.id === id);
         }
 
+        function addBlock(block) {
+            layout.push(block);
+        }
     }
 
-    function estimateSummaryHeight(report) {
+    /**
+     * Calculates the height of the main Level 1 row.
+     */
+    function estimateHeroHeight(report) {
+        const summaryLength =
+            String(report.summary || '').length;
 
-        const text = report.summary || '';
-
-        if (text.length < 200) return 70;
-
-        if (text.length < 450) return 95;
-
-        return 120;
-
-    }
-
-    function estimateBlockHeight(id, report) {
-
-        switch (id) {
-
-            case 'tasks':
-                return Math.max(
-                    80,
-                    report.tasks.length * 18 + 30
-                );
-
-            case 'decisions':
-                return Math.max(
-                    70,
-                    report.decisions.length * 18 + 30
-                );
-
-            case 'risks':
-                return Math.max(
-                    60,
-                    report.risks.length * 18 + 30
-                );
-
-            case 'insights':
-                return Math.max(
-                    60,
-                    report.insights.length * 18 + 30
-                );
-
-            case 'owners':
-                return Math.max(
-                    60,
-                    report.owners.length * 20 + 24
-                );
-
-            case 'architecture':
-                return 100;
-
-            case 'metrics':
-                return 70;
-
-            default:
-                return 60;
-
+        if (summaryLength <= 220) {
+            return 76;
         }
 
+        if (summaryLength <= 450) {
+            return 88;
+        }
+
+        return 98;
+    }
+
+    /**
+     * Calculates Level 2 card height.
+     *
+     * Heights are capped because the Executive Slide
+     * must remain a one-page summary.
+     */
+    function estimateCoreHeight(id, report) {
+        const items = getItems(id, report);
+        const count = items.length;
+
+        const baseHeight = 38;
+        const itemHeight = id === 'tasks' ? 15 : 14;
+
+        return clamp(
+            baseHeight + count * itemHeight,
+            66,
+            id === 'tasks' ? 96 : 88
+        );
+    }
+
+    /**
+     * Architecture remains compact and visually subordinate
+     * to the main analytical blocks.
+     */
+    function estimateArchitectureHeight(report) {
+        const count = Array.isArray(report.architecture)
+            ? report.architecture.length
+            : 0;
+
+        return clamp(
+            44 + count * 7,
+            58,
+            78
+        );
+    }
+
+    /**
+     * Owners and Statistics are service information.
+     * They use only the space remaining above the footer.
+     */
+    function estimateServiceHeight(report, availableHeight) {
+        const ownersCount = Array.isArray(report.owners)
+            ? report.owners.length
+            : 0;
+
+        const desiredHeight = clamp(
+            34 + ownersCount * 10,
+            42,
+            58
+        );
+
+        return Math.max(
+            34,
+            Math.min(desiredHeight, availableHeight)
+        );
+    }
+
+    function getItems(id, report) {
+        const value = report[id];
+
+        return Array.isArray(value)
+            ? value
+            : [];
+    }
+
+    function clamp(value, min, max) {
+        return Math.max(
+            min,
+            Math.min(value, max)
+        );
     }
 
     engine.layout = {
-
         PAGE,
-
         createLayout
-
     };
 
     global.ExecutiveSlideEngine = engine;
