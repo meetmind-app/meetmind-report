@@ -273,7 +273,7 @@ function showPdfBuilder() {
         className: "mm-modal-button-primary",
         async onClick() {
             Modal.close();
-            await ExecutiveSlideEngine.generate(...);
+            await generateExecutivePdf();
         }
     }
 ]
