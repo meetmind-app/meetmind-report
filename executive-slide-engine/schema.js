@@ -1,56 +1,101 @@
-/**
+/*
+ * MeetMind AI
  * Executive Slide Engine
- * Report Schema
  *
- * This module defines the normalized report structure
- * used internally by the engine.
- *
- * Every component (Layout Engine, Registry, Renderer)
- * works only with this schema.
+ * Report normalization layer.
  */
 
-export function normalizeReport(report = {}) {
-    return {
-        title: report.title || "",
-        subtitle: report.subtitle || "",
-        headline: report.headline || "",
+(function (global) {
+    'use strict';
 
-        summary: report.summary || "",
+    const engine = global.ExecutiveSlideEngine || {};
 
-        metrics: Array.isArray(report.metrics)
-            ? report.metrics
-            : [],
+    function first(...values) {
+        for (const value of values) {
+            if (
+                value !== undefined &&
+                value !== null &&
+                value !== ''
+            ) {
+                return value;
+            }
+        }
 
-        decisions: Array.isArray(report.decisions)
-            ? report.decisions
-            : [],
+        return null;
+    }
 
-        tasks: Array.isArray(report.tasks)
-            ? report.tasks
-            : [],
+    function array(value) {
+        if (Array.isArray(value)) {
+            return value;
+        }
 
-        owners: Array.isArray(report.owners)
-            ? report.owners
-            : [],
+        return [];
+    }
 
-        risks: Array.isArray(report.risks)
-            ? report.risks
-            : [],
+    function normalizeReport(report) {
 
-        insights: Array.isArray(report.insights)
-            ? report.insights
-            : [],
+        return {
 
-        architecture: report.architecture || {
-            sections: []
-        },
+            // ---------- Header ----------
 
-        participants: Array.isArray(report.participants)
-            ? report.participants
-            : [],
+            title: first(
+                report.title,
+                report.headline,
+                report.meeting_title
+            ),
 
-        stats: report.stats || {},
+            subtitle: first(
+                report.subtitle,
+                report.objective,
+                report.meeting_type
+            ),
 
-        transcript: report.transcript || ""
+            meetingDate: first(
+                report.meeting_date,
+                report.date
+            ),
+
+            // ---------- Summary ----------
+
+            summary: first(
+                report.executive_summary,
+                report.summary,
+                report.meeting_summary
+            ) || '',
+
+            // ---------- Main blocks ----------
+
+            decisions: array(report.decisions),
+
+            tasks: array(report.tasks),
+
+            risks: array(report.risks),
+
+            insights: array(report.insights),
+
+            owners: array(report.owners),
+
+            participants: array(report.participants),
+
+            architecture: array(report.architecture),
+
+            metrics: array(report.metrics),
+
+            transcript: first(
+                report.transcript,
+                report.meeting_transcript
+            ) || '',
+
+            stats: report.stats || {},
+
+            raw: report
+        };
+    }
+
+    engine.schema = {
+        normalizeReport
     };
-}
+
+    global.ExecutiveSlideEngine = engine;
+
+})(window);
