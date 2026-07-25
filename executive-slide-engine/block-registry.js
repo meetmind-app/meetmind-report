@@ -1,75 +1,89 @@
-/**
+/*
+ * MeetMind AI
  * Executive Slide Engine
- * Block Registry
  *
- * Defines all supported report blocks and
- * their default rendering order.
+ * Block Registry
  */
 
-export const BLOCKS = [
-    {
-        id: "header",
-        label: "Header",
-        enabled: true
-    },
-    {
-        id: "stats",
-        label: "Meeting Statistics",
-        enabled: true
-    },
-    {
-        id: "metrics",
-        label: "Key Metrics",
-        enabled: true
-    },
-    {
-        id: "summary",
-        label: "Executive Summary",
-        enabled: true
-    },
-    {
-        id: "decisions",
-        label: "Decisions",
-        enabled: true
-    },
-    {
-        id: "tasks",
-        label: "Tasks",
-        enabled: true
-    },
-    {
-        id: "risks",
-        label: "Risks",
-        enabled: true
-    },
-    {
-        id: "insights",
-        label: "Insights",
-        enabled: true
-    },
-    {
-        id: "owners",
-        label: "Owners",
-        enabled: true
-    },
-    {
-        id: "architecture",
-        label: "Architecture",
-        enabled: true
-    },
-    {
-        id: "footer",
-        label: "Footer",
-        enabled: true
-    }
-];
+(function (global) {
+    'use strict';
 
-export function getEnabledBlocks(options = {}) {
-    return BLOCKS.filter(block => {
-        if (options[block.id] === undefined) {
-            return block.enabled;
+    const engine = global.ExecutiveSlideEngine || {};
+
+    const DEFAULT_BLOCKS = [
+        'header',
+        'stats',
+        'summary',
+        'decisions',
+        'tasks',
+        'risks',
+        'insights',
+        'owners',
+        'architecture',
+        'metrics',
+        'footer'
+    ];
+
+    function hasContent(blockId, report) {
+
+        switch (blockId) {
+
+            case 'header':
+                return true;
+
+            case 'footer':
+                return true;
+
+            case 'summary':
+                return !!report.summary;
+
+            case 'stats':
+                return Object.keys(report.stats || {}).length > 0;
+
+            case 'decisions':
+                return report.decisions.length > 0;
+
+            case 'tasks':
+                return report.tasks.length > 0;
+
+            case 'risks':
+                return report.risks.length > 0;
+
+            case 'insights':
+                return report.insights.length > 0;
+
+            case 'owners':
+                return report.owners.length > 0;
+
+            case 'architecture':
+                return report.architecture.length > 0;
+
+            case 'metrics':
+                return report.metrics.length > 0;
+
+            default:
+                return false;
         }
 
-        return Boolean(options[block.id]);
-    });
-}
+    }
+
+    function getEnabledBlocks(report, options = {}) {
+
+        const enabled = options.enabledBlocks || DEFAULT_BLOCKS;
+
+        return enabled
+            .filter(block => hasContent(block, report))
+            .map(block => ({
+                id: block
+            }));
+
+    }
+
+    engine.blocks = {
+        DEFAULT_BLOCKS,
+        getEnabledBlocks
+    };
+
+    global.ExecutiveSlideEngine = engine;
+
+})(window);
