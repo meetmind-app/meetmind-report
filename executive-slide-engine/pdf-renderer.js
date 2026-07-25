@@ -1,38 +1,160 @@
-import {
-    PDFDocument,
-    StandardFonts,
-    rgb
-} from "pdf-lib";
-
-/**
+/*
+ * MeetMind AI
  * Executive Slide Engine
+ *
  * PDF Renderer
  */
 
-export async function renderPdf({
-    report,
-    blocks,
-    layout
-}) {
-    if (!report) {
-        throw new Error("Report is required.");
+(function (global) {
+
+    'use strict';
+
+    const engine = global.ExecutiveSlideEngine || {};
+
+    // ============================================================
+    // PUBLIC API
+    // ============================================================
+
+    async function renderPdf(report, layout) {
+
+        const pdf = await PDFLib.PDFDocument.create();
+
+        const page = pdf.addPage([
+            layout.page.width,
+            layout.page.height
+        ]);
+
+        // default font
+        const font = await pdf.embedFont(
+            PDFLib.StandardFonts.Helvetica
+        );
+
+        const context = {
+            pdf,
+            page,
+            font,
+            report,
+            layout
+        };
+
+        for (const block of layout.blocks) {
+
+            const renderer = BlockRenderers[block.id];
+
+            if (renderer) {
+
+                renderer(context, block);
+
+            }
+
+        }
+
+        return await pdf.save();
+
     }
 
-    const pdf = await PDFDocument.create();
+    // ============================================================
+    // BLOCK RENDERERS
+    // ============================================================
 
-    const page = pdf.addPage([842, 595]);
+    const BlockRenderers = {
 
-    const font = await pdf.embedFont(StandardFonts.Helvetica);
+        header,
 
-    page.drawText(report.title || "Untitled Meeting", {
-        x: 40,
-        y: 555,
-        size: 24,
-        font,
-        color: rgb(0.15, 0.15, 0.15)
-    });
+        summary,
 
-    const pdfBytes = await pdf.save();
+        metrics,
 
-    return pdfBytes;
-}
+        decisions,
+
+        tasks,
+
+        risks,
+
+        insights,
+
+        architecture,
+
+        owners,
+
+        stats,
+
+        footer
+
+    };
+
+    // ============================================================
+    // BLOCKS
+    // ============================================================
+
+    function header(ctx, block) {}
+
+    function summary(ctx, block) {}
+
+    function metrics(ctx, block) {}
+
+    function decisions(ctx, block) {}
+
+    function tasks(ctx, block) {}
+
+    function risks(ctx, block) {}
+
+    function insights(ctx, block) {}
+
+    function architecture(ctx, block) {}
+
+    function owners(ctx, block) {}
+
+    function stats(ctx, block) {}
+
+    function footer(ctx, block) {}
+
+    // ============================================================
+    // DRAWING API
+    // ============================================================
+
+    function drawCard(ctx, block) {}
+
+    function drawTitle(ctx, block, title) {}
+
+    function drawParagraph(ctx, block, text) {}
+
+    function drawBulletList(ctx, block, items) {}
+
+    function drawMetricGrid(ctx, block, metrics) {}
+
+    function drawDivider(ctx, x, y, width) {}
+
+    function drawText(ctx, options) {}
+
+    function wrapText(text, width, font, size) {
+
+        return [text];
+
+    }
+
+    function truncate(text, limit) {
+
+        if (!text) return "";
+
+        if (text.length <= limit) {
+
+            return text;
+
+        }
+
+        return text.substring(0, limit - 1) + "…";
+
+    }
+
+    // ============================================================
+
+    engine.renderer = {
+
+        renderPdf
+
+    };
+
+    global.ExecutiveSlideEngine = engine;
+
+})(window);
