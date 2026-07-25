@@ -6,22 +6,43 @@
  * No PDF rendering happens here.
  */
 
-const PAGE = {
+export const PAGE = {
+
     width: 842,
+
     height: 595,
-    margin: 32,
-    gap: 16
+
+    margin: {
+
+        top: 32,
+
+        right: 32,
+
+        bottom: 32,
+
+        left: 32
+
+    },
+
+    gap: 16,
+
+    contentWidth: 842 - 32 - 32,
+
+    contentHeight: 595 - 32 - 32
+
 };
 
 export function createLayout(blocks = []) {
-    let currentY = PAGE.margin;
+    let currentY = PAGE.margin.top;
 
     return blocks.map(block => {
         const layoutBlock = {
             ...block,
-            x: PAGE.margin,
+            x: PAGE.margin.left,
+
             y: currentY,
-            width: PAGE.width - PAGE.margin * 2,
+
+            width: PAGE.contentWidth,
             height: 0
         };
 
