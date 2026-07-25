@@ -150,8 +150,16 @@ async function findBestPdfCandidate(report) {
 }
 
 async function generateExecutivePdf() {
-    
+
     const report = buildReportJson();
+
+    console.log("========== REPORT JSON ==========");
+
+    console.log(report);
+
+    console.log("================================");
+
+    return;
 
     const bestCandidate = await findBestPdfCandidate(report);
 
