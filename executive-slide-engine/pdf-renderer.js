@@ -12,6 +12,149 @@
     const engine = global.ExecutiveSlideEngine || {};
 
     // ============================================================
+// DESIGN SYSTEM
+// ============================================================
+
+const DESIGN = {
+
+    colors: {
+
+        pageBackground: rgb(1.00, 1.00, 1.00),
+
+        cardBackground: rgb(0.985, 0.985, 0.985),
+
+        cardBorder: rgb(0.88, 0.88, 0.88),
+
+        title: rgb(0.12, 0.12, 0.12),
+
+        body: rgb(0.22, 0.22, 0.22),
+
+        secondary: rgb(0.50, 0.50, 0.50),
+
+        accent: rgb(0.12, 0.47, 0.92)
+
+    },
+
+    typography: {
+
+        title: {
+            size: 15,
+            lineHeight: 18
+        },
+
+        subtitle: {
+            size: 11,
+            lineHeight: 14
+        },
+
+        body: {
+            size: 9.5,
+            lineHeight: 13
+        },
+
+        small: {
+            size: 8,
+            lineHeight: 10
+        },
+
+        metricValue: {
+            size: 22,
+            lineHeight: 24
+        },
+
+        metricLabel: {
+            size: 8,
+            lineHeight: 10
+        }
+
+    },
+
+    hierarchy: {
+
+        primary: {
+
+            titleSize: 15,
+
+            bodySize: 10
+
+        },
+
+        core: {
+
+            titleSize: 13,
+
+            bodySize: 9
+
+        },
+
+        supporting: {
+
+            titleSize: 11,
+
+            bodySize: 8.5
+
+        },
+
+        service: {
+
+            titleSize: 10,
+
+            bodySize: 8
+
+        }
+
+    },
+
+    spacing: {
+
+        cardPadding: 12,
+
+        titleGap: 8,
+
+        paragraphGap: 6,
+
+        bulletGap: 5,
+
+        sectionGap: 12
+
+    },
+
+    card: {
+
+        radius: 8,
+
+        borderWidth: 0.75
+
+    },
+
+    bullets: {
+
+        radius: 1.8,
+
+        indent: 10
+
+    }
+
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function color(name) {
+
+    return DESIGN.colors[name];
+
+}
+
+function style(role) {
+
+    return DESIGN.hierarchy[role] ||
+           DESIGN.hierarchy.core;
+
+}
+
+    // ============================================================
     // PUBLIC API
     // ============================================================
 
