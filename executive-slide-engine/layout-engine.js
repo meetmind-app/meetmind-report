@@ -52,4 +52,4 @@ export function createLayout(blocks = []) {
     });
 }
 
-export { PAGE };
+
