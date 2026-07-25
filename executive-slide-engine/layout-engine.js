@@ -1,55 +1,124 @@
-/**
+/*
+ * MeetMind AI
  * Executive Slide Engine
- * Layout Engine
  *
- * Calculates block positions on the page.
- * No PDF rendering happens here.
+ * Layout Engine
  */
 
-export const PAGE = {
+(function (global) {
+    'use strict';
 
-    width: 842,
+    const engine = global.ExecutiveSlideEngine || {};
 
-    height: 595,
+    const PAGE = {
 
-    margin: {
+        width: 842,
+        height: 595,
 
-        top: 32,
+        margin: {
+            top: 32,
+            right: 32,
+            bottom: 32,
+            left: 32
+        },
 
-        right: 32,
+        gap: 16
 
-        bottom: 32,
+    };
 
-        left: 32
+    function createLayout(report, blocks) {
 
-    },
+        let y = PAGE.margin.top;
 
-    gap: 16,
+        const layout = [];
 
-    contentWidth: 842 - 32 - 32,
+        blocks.forEach(block => {
 
-    contentHeight: 595 - 32 - 32
+            const height = estimateHeight(block.id);
 
-};
+            layout.push({
 
-export function createLayout(blocks = []) {
-    let currentY = PAGE.margin.top;
+                id: block.id,
 
-    return blocks.map(block => {
-        const layoutBlock = {
-            ...block,
-            x: PAGE.margin.left,
+                x: PAGE.margin.left,
 
-            y: currentY,
+                y,
 
-            width: PAGE.contentWidth,
-            height: 0
+                width:
+                    PAGE.width -
+                    PAGE.margin.left -
+                    PAGE.margin.right,
+
+                height
+
+            });
+
+            y += height + PAGE.gap;
+
+        });
+
+        return {
+
+            page: PAGE,
+
+            blocks: layout
+
         };
 
-        currentY += PAGE.gap;
+    }
 
-        return layoutBlock;
-    });
-}
+    function estimateHeight(blockId) {
 
+        switch (blockId) {
 
+            case 'header':
+                return 60;
+
+            case 'stats':
+                return 40;
+
+            case 'summary':
+                return 90;
+
+            case 'decisions':
+                return 70;
+
+            case 'tasks':
+                return 100;
+
+            case 'risks':
+                return 60;
+
+            case 'insights':
+                return 60;
+
+            case 'owners':
+                return 60;
+
+            case 'architecture':
+                return 80;
+
+            case 'metrics':
+                return 60;
+
+            case 'footer':
+                return 28;
+
+            default:
+                return 50;
+
+        }
+
+    }
+
+    engine.layout = {
+
+        PAGE,
+
+        createLayout
+
+    };
+
+    global.ExecutiveSlideEngine = engine;
+
+})(window);
