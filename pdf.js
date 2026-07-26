@@ -159,7 +159,7 @@ async function generateExecutivePdf() {
 
     console.log("================================");
 
-    return;
+   // return;
 
     const bestCandidate = await findBestPdfCandidate(report);
 
