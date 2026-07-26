@@ -1,42 +1,52 @@
 /*
  * MeetMind AI
- * Executive PDF Generator
+ * Executive PDF Generator v2
+ *
+ * Entry point for the Executive Slide Engine.
+ *
+ * Pipeline:
+ * buildReportJson()
+ *     -> ExecutiveSlideEngine.generate(report, options)
+ *     -> Uint8Array / ArrayBuffer / Blob
+ *     -> browser download
  */
 
 'use strict';
+
 const PDF_CONFIG = {
-    pageWidth: 1280,
-    pageHeight: 720,
     fileSuffix: ' - MeetMind AI.pdf'
 };
 
-
 const PDF_BUILDER_DEFAULT = {
     header: true,
-    statistics: true,
-    keyMetrics: true,
+    stats: true,
+    metrics: true,
     summary: true,
-    findings: true,
+    decisions: true,
     tasks: true,
+    risks: true,
+    insights: true,
     owners: true,
     architecture: true,
     footer: true
 };
 
-let pdfBuilderOptions = {
-    ...PDF_BUILDER_DEFAULT
+const PDF_OPTION_LABELS = {
+    header: 'Header',
+    stats: 'Meeting Statistics',
+    metrics: 'Key Metrics',
+    summary: 'Executive Summary',
+    decisions: 'Decisions',
+    tasks: 'Tasks',
+    risks: 'Risks',
+    insights: 'Insights',
+    owners: 'Owners',
+    architecture: 'Architecture',
+    footer: 'Footer'
 };
 
-const PDF_OPTION_LABELS = {
-    header: "Header",
-    statistics: "Meeting Statistics",
-    keyMetrics: "Key Metrics",
-    summary: "Executive Summary",
-    findings: "Insights",
-    tasks: "Tasks",
-    owners: "Owners",
-    architecture: "Architecture",
-    footer: "Footer"
+let pdfBuilderOptions = {
+    ...PDF_BUILDER_DEFAULT
 };
 
 function sanitizePdfFilename(value) {
@@ -57,163 +67,127 @@ function getPdfTitle() {
     );
 }
 
-function isPdfValueVisible(value) {
-    return value !== null &&
-        value !== undefined &&
-        String(value).trim() !== '' &&
-        value !== 'Не указано' &&
-        value !== 'Not specified';
-}
+function getExecutiveSlideEngine() {
+    const engine = window.ExecutiveSlideEngine;
 
-function normalizePdfItem(item) {
-    if (typeof item === 'string') {
-        return {
-            title: item,
-            details: ''
-        };
+    if (!engine || typeof engine.generate !== 'function') {
+        throw new Error(
+            'Executive Slide Engine is unavailable. ' +
+            'Make sure index.js and all engine modules are loaded before pdf.js.'
+        );
     }
-    
-    const title = item.title || item.task || item.name || '';
-    const details = [
-        item.details,
-        item.description,
-        item.owner ? `Owner: ${item.owner}` : '',
-        item.due_date ? `Due: ${item.due_date}` : '',
-        item.dueDate ? `Due: ${item.dueDate}` : ''
-    ]
-        .filter(Boolean)
-        .join(' · ');
-    return {
-        title,
-        details
-    };
+
+    return engine;
 }
 
-async function evaluatePdfCandidate(report, candidateOptions) {
-    const html = await MeetMindPDF.generate(
-        report,
-        candidateOptions
-    );
-
-    const root = document.createElement("div");
-    root.className = "pdf-root";
-    root.innerHTML = html;
-
-    root.style.position = "fixed";
-    root.style.left = "-100000px";
-    root.style.top = "0";
-    root.style.pointerEvents = "none";
-    root.style.zIndex = "-1";
-
-    root.style.width = PDF_CONFIG.pageWidth + "px";
-    root.style.height = PDF_CONFIG.pageHeight + "px";
-
-    document.body.appendChild(root);
-
-    const measurement = LayoutEvaluator.measure(
-        root.querySelector(".mm-report")
-    );
-
-    root.remove();
+function buildEngineOptions() {
+    /*
+     * Block IDs intentionally match block-registry.js:
+     * header, stats, summary, decisions, tasks, risks,
+     * insights, owners, architecture, metrics, footer.
+     *
+     * The engine receives only the current UI state.
+     * It remains responsible for resolving enabled blocks,
+     * creating the layout and rendering the PDF.
+     */
     return {
-        html,
-        measurement,
-        options: candidateOptions
+        ...pdfBuilderOptions
     };
-}
-
-async function findBestPdfCandidate(report) {
-    const selected =
-        await LayoutOptimizer.optimize({
-            report,
-            builderOptions: pdfBuilderOptions,
-            evaluateCandidate:
-                evaluatePdfCandidate,
-            pageHeight:
-                PDF_CONFIG.pageHeight
-        });
-
-    console.log("PDF LAYOUT RESULT", {
-        fits: selected?.fits,
-        overflow: selected?.overflow,
-        height:
-            selected?.measurement?.totalHeight,
-        densityMode:
-            selected?.options?.densityMode,
-        layoutModes:
-            selected?.options?.layoutModes,
-        penalty:
-            selected?.penalty
-    });
-
-    return selected;
 }
 
 async function generateExecutivePdf() {
-
     const report = buildReportJson();
+    const engine = getExecutiveSlideEngine();
+    const options = buildEngineOptions();
 
-    console.log("========== REPORT JSON ==========");
+    console.log('PDF Engine v2 input', {
+        report,
+        options
+    });
 
-    console.log(report);
+    const result = await engine.generate(
+        report,
+        options
+    );
 
-    console.log("================================");
-
-   // return;
-
-    const bestCandidate = await findBestPdfCandidate(report);
-
-    console.log("PDF EXPORT BEST:", bestCandidate.options.layoutModes);
-    console.log("PDF EXPORT HEIGHT:", bestCandidate.measurement.totalHeight);
-
-    const html = bestCandidate.html;
-
-    const pdfRoot = document.createElement("div");
-    pdfRoot.className = "pdf-root";
-
-    pdfRoot.style.background = "#ffffff";
-    pdfRoot.style.position = "fixed";
-    pdfRoot.style.left = "-100000px";
-    pdfRoot.style.top = "0";
-    pdfRoot.style.pointerEvents = "none";
-    pdfRoot.style.zIndex = "-1";
-    pdfRoot.style.width = PDF_CONFIG.pageWidth + "px";
-
-    pdfRoot.innerHTML = html;
-    document.body.appendChild(pdfRoot);
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-
+    const blob = normalizePdfResult(result);
     const filename =
         sanitizePdfFilename(getPdfTitle()) +
         PDF_CONFIG.fileSuffix;
 
-    const options = {
-        margin: 0,
-        filename,
-        image: {
-            type: "jpeg",
-            quality: 1
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true
-        },
-        jsPDF: {
-            unit: "px",
-            format: [PDF_CONFIG.pageWidth, PDF_CONFIG.pageHeight],
-            orientation: "landscape"
-        }
-    };
+    downloadPdfBlob(blob, filename);
 
-    try {
-        await html2pdf()
-            .set(options)
-            .from(pdfRoot.querySelector(".mm-report"))
-            .save();
-    } finally {
-        pdfRoot.remove();
+    console.log('PDF Engine v2 export complete', {
+        filename,
+        size: blob.size
+    });
+}
+
+function normalizePdfResult(result) {
+    if (result instanceof Blob) {
+        return result.type === 'application/pdf'
+            ? result
+            : new Blob(
+                [result],
+                { type: 'application/pdf' }
+            );
     }
+
+    if (result instanceof Uint8Array) {
+        return new Blob(
+            [result],
+            { type: 'application/pdf' }
+        );
+    }
+
+    if (result instanceof ArrayBuffer) {
+        return new Blob(
+            [new Uint8Array(result)],
+            { type: 'application/pdf' }
+        );
+    }
+
+    if (
+        ArrayBuffer.isView(result) &&
+        result.buffer instanceof ArrayBuffer
+    ) {
+        return new Blob(
+            [
+                new Uint8Array(
+                    result.buffer,
+                    result.byteOffset,
+                    result.byteLength
+                )
+            ],
+            { type: 'application/pdf' }
+        );
+    }
+
+    throw new Error(
+        'Executive Slide Engine returned an unsupported PDF result. ' +
+        'Expected Blob, Uint8Array, ArrayBuffer or another ArrayBuffer view.'
+    );
+}
+
+function downloadPdfBlob(blob, filename) {
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = objectUrl;
+    link.download = filename;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    /*
+     * Revocation is delayed because some browsers begin reading
+     * the object URL only after the click handler has completed.
+     */
+    window.setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+    }, 1000);
 }
 
 function buildPdfOptionsHtml() {
@@ -223,26 +197,27 @@ function buildPdfOptionsHtml() {
                 <input
                     type="checkbox"
                     data-option="${key}"
-                    ${value ? "checked" : ""}
+                    ${value ? 'checked' : ''}
                 >
                 <span>${PDF_OPTION_LABELS[key]}</span>
             </label>
         `)
-        .join("");
+        .join('');
 }
 
 function bindPdfOptions() {
     document
-        .querySelectorAll(".mm-option input")
+        .querySelectorAll('.mm-option input')
         .forEach(input => {
-            input.addEventListener("change", event => {
+            input.addEventListener('change', event => {
                 const key = event.target.dataset.option;
-                pdfBuilderOptions[key] = event.target.checked;
-                console.log(
-                    "PDF option:",
-                    key,
-                    pdfBuilderOptions[key]
-                );
+
+                if (!(key in pdfBuilderOptions)) {
+                    return;
+                }
+
+                pdfBuilderOptions[key] =
+                    event.target.checked;
             });
         });
 }
@@ -253,46 +228,123 @@ function resetPdfBuilderOptions() {
     };
 }
 
+function setPdfExportPending(isPending) {
+    const exportButton =
+        document.querySelector(
+            '[data-modal-action="export"], ' +
+            '#export, ' +
+            '.mm-modal-button-primary'
+        );
+
+    if (!exportButton) {
+        return;
+    }
+
+    exportButton.disabled = isPending;
+    exportButton.setAttribute(
+        'aria-busy',
+        String(isPending)
+    );
+}
+
+function showPdfExportError(error) {
+    console.error(
+        'PDF Engine v2 export failed',
+        error
+    );
+
+    const message =
+        error instanceof Error
+            ? error.message
+            : String(error);
+
+    if (
+        window.Modal &&
+        typeof window.Modal.show === 'function'
+    ) {
+        window.Modal.show({
+            title: 'PDF export failed',
+            content: `
+                <div class="mm-pdf-error">
+                    ${escapePdfHtml(message)}
+                </div>
+            `,
+            actions: [
+                {
+                    id: 'close',
+                    label: 'Close',
+                    onClick() {
+                        Modal.close();
+                    }
+                }
+            ]
+        });
+
+        return;
+    }
+
+    window.alert(
+        `PDF export failed: ${message}`
+    );
+}
+
+function escapePdfHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function showPdfBuilder() {
     resetPdfBuilderOptions();
-    const optionsHtml = buildPdfOptionsHtml();
-    
+
     Modal.show({
-        title: "Export PDF",
-        
+        title: 'Export PDF',
+
         content: `
-    <div class="mm-pdf-options">
-        ${optionsHtml}
-    </div>
-`,
+            <div class="mm-pdf-options">
+                ${buildPdfOptionsHtml()}
+            </div>
+        `,
 
-       actions: [
-    {
-        id: "cancel",
-        label: "Cancel",
-        onClick() {
-            Modal.close();
-        }
-    },
+        actions: [
+            {
+                id: 'cancel',
+                label: 'Cancel',
+                onClick() {
+                    Modal.close();
+                }
+            },
 
-    {
-        id: "export",
-        label: "Export PDF",
-        className: "mm-modal-button-primary",
-        async onClick() {
-            Modal.close();
-            await generateExecutivePdf();
-        }
-    }
-]
+            {
+                id: 'export',
+                label: 'Export PDF',
+                className:
+                    'mm-modal-button-primary',
+
+                async onClick() {
+                    setPdfExportPending(true);
+
+                    try {
+                        await generateExecutivePdf();
+                        Modal.close();
+                    } catch (error) {
+                        Modal.close();
+                        showPdfExportError(error);
+                    } finally {
+                        setPdfExportPending(false);
+                    }
+                }
+            }
+        ]
     });
-    
-bindPdfOptions();
+
+    bindPdfOptions();
 }
 
 window.PDFBuilder = {
-    show: showPdfBuilder
+    show: showPdfBuilder,
+    generate: generateExecutivePdf
 };
-    
-
-    
