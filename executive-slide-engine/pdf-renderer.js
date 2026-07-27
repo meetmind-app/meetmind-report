@@ -811,6 +811,41 @@
         const maxWidth =
             block.width -
             DESIGN.spacing.cardPadding * 2;
+        const columnGap = 10;
+
+        const ownerWidth =
+    Math.max(
+        ...visibleTasks.map(task =>
+            safeTextWidth(
+                ctx.fonts.regular,
+                textValue(task.owner, '—'),
+                roleStyle.bodySize
+            )
+        ),
+        50
+    ) + 10;
+
+        const dueWidth =
+    Math.max(
+        ...visibleTasks.map(task =>
+            safeTextWidth(
+                ctx.fonts.regular,
+                textValue(
+                    task.dueDate ||
+                    task.deadline,
+                    '—'
+                ),
+                roleStyle.bodySize
+            )
+        ),
+        45
+    ) + 10;
+
+        const taskWidth =
+    maxWidth -
+    ownerWidth -
+    dueWidth -
+    columnGap * 2;
 
         for (const task of visibleTasks) {
             const remainingHeight =
