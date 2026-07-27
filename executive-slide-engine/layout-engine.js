@@ -149,10 +149,10 @@
         // DECISIONS / TASKS / RISKS / INSIGHTS
         // -----------------------------------------
 
-        const coreRows = [
-            ['decisions', 'tasks'],
-            ['risks', 'insights']
-        ];
+       const coreRows = [
+    ['decisions', 'insights'],
+    ['risks']
+];
 
         coreRows.forEach(rowIds => {
             const visibleIds = rowIds.filter(exists);
@@ -207,6 +207,28 @@
 
             y += rowHeight + PAGE.gap;
         });
+
+        // -----------------------------------------
+// TASKS
+// -----------------------------------------
+
+if (exists('tasks')) {
+
+    const tasksHeight =
+        estimateTasksHeight(report);
+
+    addBlock({
+        id: 'tasks',
+        x: PAGE.margin.left,
+        y,
+        width: CONTENT_WIDTH,
+        height: tasksHeight,
+        level: 3,
+        role: 'supporting'
+    });
+
+    y += tasksHeight + PAGE.gap;
+}
 
         // -----------------------------------------
         // LEVEL 3
