@@ -972,8 +972,8 @@
         const roleStyle =
             style(block.role);
 
-        const normalized =
-            normalizeListItems(items);
+       const normalized =
+    normalizeBulletItems(items);
 
         const maxItems =
             options.maxItems ||
@@ -1736,6 +1736,72 @@
     // DATA NORMALIZATION
     // ============================================================
 
+    function normalizeBulletItems(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items
+        .map(item => {
+            if (
+                typeof item === 'string' ||
+                typeof item === 'number'
+            ) {
+                return {
+                    title: String(item).trim(),
+                    description: ''
+                };
+            }
+
+            if (
+                item &&
+                typeof item === 'object'
+            ) {
+                const title = textValue(
+                    item.title,
+                    item.text,
+                    item.name,
+                    item.decision,
+                    item.risk,
+                    item.insight,
+                    item.owner,
+                    item.value
+                ).trim();
+
+                const description = textValue(
+                    item.description
+                ).trim();
+
+                if (!title && description) {
+                    return {
+                        title: description,
+                        description: ''
+                    };
+                }
+
+                return {
+                    title,
+                    description:
+                        description !== title
+                            ? description
+                            : ''
+                };
+            }
+
+            return {
+                title: '',
+                description: ''
+            };
+        })
+        .filter(item =>
+            Boolean(
+                item.title ||
+                item.description
+            )
+        );
+}
+    
+    
     function normalizeListItems(items) {
         if (!Array.isArray(items)) {
             return [];
