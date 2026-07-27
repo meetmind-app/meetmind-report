@@ -1474,6 +1474,30 @@
         };
     }
 
+    function measureText({
+    text,
+    font,
+    fontSize,
+    maxWidth,
+    lineHeight
+}) {
+
+    const lines = wrapText(
+        text,
+        font,
+        fontSize,
+        maxWidth
+    );
+
+    return {
+        lines,
+        lineCount: lines.length,
+        height:
+            lines.length *
+            lineHeight
+    };
+}
+
     function drawLines(
         ctx,
         options
