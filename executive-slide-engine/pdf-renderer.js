@@ -859,7 +859,8 @@
                 break;
             }
 
-            drawText(ctx, {
+            const taskResult =
+    drawText(ctx, {
     text:
         textValue(
     task.title,
@@ -922,7 +923,7 @@ drawText(ctx, {
 });
 
 yTop +=
-    roleStyle.lineHeight * 2 +
+    taskResult.height +
     DESIGN.spacing.bulletGap;
         }
 
