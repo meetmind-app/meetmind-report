@@ -769,183 +769,158 @@
         }
     }
 
-    function drawTaskList(
-        ctx,
-        block,
-        tasksData,
-        options = {}
-    ) {
-        const roleStyle =
-            style(block.role);
+   function drawTaskList(
+    ctx,
+    block,
+    tasksData,
+    options = {}
+) {
+    const roleStyle =
+        style(block.role);
 
-        const tasks =
-            normalizeTasks(tasksData);
+    const tasks =
+        normalizeTasks(tasksData);
 
-        const maxItems =
-            options.maxItems ||
-            tasks.length;
+    const maxItems =
+        options.maxItems ||
+        tasks.length;
 
-        const visibleTasks =
-            tasks.slice(
-                0,
-                maxItems
-            );
+    const visibleTasks =
+        tasks.slice(
+            0,
+            maxItems
+        );
 
-        const hiddenCount =
-            Math.max(
-                0,
-                tasks.length -
-                visibleTasks.length
-            );
+    const hiddenCount =
+        Math.max(
+            0,
+            tasks.length -
+            visibleTasks.length
+        );
 
-        const x =
-            block.x +
-            DESIGN.spacing.cardPadding;
+    const x =
+        block.x +
+        DESIGN.spacing.cardPadding;
 
-        let yTop =
-            contentTop(
-                block,
-                roleStyle
-            );
+    let yTop =
+        contentTop(
+            block,
+            roleStyle
+        );
 
-        const maxWidth =
-            block.width -
-            DESIGN.spacing.cardPadding * 2;
-        const columnGap = 10;
+    const maxWidth =
+        block.width -
+        DESIGN.spacing.cardPadding * 2;
 
-        const ownerWidth =
-    Math.max(
-        ...visibleTasks.map(task =>
-            safeTextWidth(
-                ctx.fonts.regular,
-                textValue(task.owner, '—'),
-                roleStyle.bodySize
-            )
-        ),
-        50
-    ) + 10;
+    const columnGap = 10;
 
-        const dueWidth =
-    Math.max(
-        ...visibleTasks.map(task =>
-            safeTextWidth(
-                ctx.fonts.regular,
-                textValue(
-                    task.dueDate ||
-                    task.deadline,
-                    '—'
-                ),
-                roleStyle.bodySize
-            )
-        ),
-        45
-    ) + 10;
+    const ownerWidth =
+        Math.max(
+            ...visibleTasks.map(task =>
+                safeTextWidth(
+                    ctx.fonts.regular,
+                    textValue(
+                        task.owner,
+                        '—'
+                    ),
+                    roleStyle.bodySize
+                )
+            ),
+            50
+        ) + 10;
 
-        const taskWidth =
-    maxWidth -
-    ownerWidth -
-    dueWidth -
-    columnGap * 2;
+    const dueWidth =
+        Math.max(
+            ...visibleTasks.map(task =>
+                safeTextWidth(
+                    ctx.fonts.regular,
+                    textValue(
+                        task.due,
+                        '—'
+                    ),
+                    roleStyle.bodySize
+                )
+            ),
+            45
+        ) + 10;
 
-        for (const task of visibleTasks) {
-            const remainingHeight =
-                block.y +
-                block.height -
-                DESIGN.spacing.cardPadding -
-                yTop;
+    const taskWidth =
+        maxWidth -
+        ownerWidth -
+        dueWidth -
+        columnGap * 2;
 
-            if (remainingHeight <
-                roleStyle.lineHeight) {
-                break;
-            }
+    for (const task of visibleTasks) {
 
-            const taskResult =
-        drawText(ctx, {
-        text: textValue(task.title, '—'),
-        ...
-    });
-            
-    const ownerResult =
-    drawText(ctx, {
-    text:
-        textValue(task.owner, '—'),
-        ...
-    });
-            
-    x,
-    yTop,
-    size:
-        roleStyle.bodySize,
-    lineHeight:
-        roleStyle.lineHeight,
-    colorName: 'body',
-    fontName: 'regular',
-    maxWidth: taskWidth,
-    maxLines: 2
-});
+        const remainingHeight =
+            block.y +
+            block.height -
+            DESIGN.spacing.cardPadding -
+            yTop;
 
-const dueResult =
-    drawText(ctx, {
-    text:
-        textValue(task.due, '—'),
-        ...
-    });
-        
-    x:
-        x +
-        taskWidth +
-        columnGap,
-    yTop,
-    size:
-        roleStyle.bodySize,
-    lineHeight:
-        roleStyle.lineHeight,
-    colorName: 'body',
-    fontName: 'regular',
-    maxWidth: ownerWidth,
-    maxLines: 1
-});
-
-drawText(ctx, {
-    text:
-        textValue(
-        task.due,
-        '—'
-),
-    x:
-        x +
-        taskWidth +
-        columnGap +
-        ownerWidth +
-        columnGap,
-    yTop,
-    size:
-        roleStyle.bodySize,
-    lineHeight:
-        roleStyle.lineHeight,
-    colorName: 'secondary',
-    fontName: 'regular',
-    maxWidth: dueWidth,
-    maxLines: 1
-});
-
-const rowHeight =
-    Math.max(
-        taskResult.height,
-        ownerResult.height,
-        dueResult.height
-    );
-
-yTop +=
-    rowHeight +
-    DESIGN.spacing.bulletGap;
+        if (
+            remainingHeight <
+            roleStyle.lineHeight
+        ) {
+            break;
         }
 
-        if (hiddenCount > 0) {
+        const taskResult =
             drawText(ctx, {
                 text:
-                    `… +${hiddenCount} more`,
+                    textValue(
+                        task.title,
+                        '—'
+                    ),
                 x,
+                yTop,
+                size:
+                    roleStyle.bodySize,
+                lineHeight:
+                    roleStyle.lineHeight,
+                colorName: 'body',
+                fontName: 'regular',
+                maxWidth:
+                    taskWidth,
+                maxLines: 2
+            });
+
+        const ownerResult =
+            drawText(ctx, {
+                text:
+                    textValue(
+                        task.owner,
+                        '—'
+                    ),
+                x:
+                    x +
+                    taskWidth +
+                    columnGap,
+                yTop,
+                size:
+                    roleStyle.bodySize,
+                lineHeight:
+                    roleStyle.lineHeight,
+                colorName: 'body',
+                fontName: 'regular',
+                maxWidth:
+                    ownerWidth,
+                maxLines: 1
+            });
+
+        const dueResult =
+            drawText(ctx, {
+                text:
+                    textValue(
+                        task.due,
+                        '—'
+                    ),
+                x:
+                    x +
+                    taskWidth +
+                    columnGap +
+                    ownerWidth +
+                    columnGap,
                 yTop,
                 size:
                     roleStyle.bodySize,
@@ -953,11 +928,40 @@ yTop +=
                     roleStyle.lineHeight,
                 colorName: 'secondary',
                 fontName: 'regular',
-                maxWidth,
+                maxWidth:
+                    dueWidth,
                 maxLines: 1
             });
-        }
+
+        const rowHeight =
+            Math.max(
+                taskResult.height,
+                ownerResult.height,
+                dueResult.height
+            );
+
+        yTop +=
+            rowHeight +
+            DESIGN.spacing.bulletGap;
     }
+
+    if (hiddenCount > 0) {
+        drawText(ctx, {
+            text:
+                `… +${hiddenCount} more`,
+            x,
+            yTop,
+            size:
+                roleStyle.bodySize,
+            lineHeight:
+                roleStyle.lineHeight,
+            colorName: 'secondary',
+            fontName: 'regular',
+            maxWidth,
+            maxLines: 1
+        });
+    }
+}
 
     function drawCompactList(
         ctx,
