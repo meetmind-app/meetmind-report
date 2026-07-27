@@ -859,27 +859,72 @@
                 break;
             }
 
-            const line =
-                buildTaskLine(task);
-
             drawText(ctx, {
-                text:
-                    line || '—',
-                x,
-                yTop,
-                size:
-                    roleStyle.bodySize,
-                lineHeight:
-                    roleStyle.lineHeight,
-                colorName: 'body',
-                fontName: 'regular',
-                maxWidth,
-                maxLines: 1
-            });
+    text:
+        textValue(
+            task.task || task.title,
+            '—'
+        ),
+    x,
+    yTop,
+    size:
+        roleStyle.bodySize,
+    lineHeight:
+        roleStyle.lineHeight,
+    colorName: 'body',
+    fontName: 'regular',
+    maxWidth: taskWidth,
+    maxLines: 2
+});
 
-            yTop +=
-                roleStyle.lineHeight +
-                DESIGN.spacing.bulletGap;
+drawText(ctx, {
+    text:
+        textValue(
+            task.owner,
+            '—'
+        ),
+    x:
+        x +
+        taskWidth +
+        columnGap,
+    yTop,
+    size:
+        roleStyle.bodySize,
+    lineHeight:
+        roleStyle.lineHeight,
+    colorName: 'body',
+    fontName: 'regular',
+    maxWidth: ownerWidth,
+    maxLines: 1
+});
+
+drawText(ctx, {
+    text:
+        textValue(
+            task.dueDate ||
+            task.deadline,
+            '—'
+        ),
+    x:
+        x +
+        taskWidth +
+        columnGap +
+        ownerWidth +
+        columnGap,
+    yTop,
+    size:
+        roleStyle.bodySize,
+    lineHeight:
+        roleStyle.lineHeight,
+    colorName: 'secondary',
+    fontName: 'regular',
+    maxWidth: dueWidth,
+    maxLines: 1
+});
+
+yTop +=
+    roleStyle.lineHeight * 2 +
+    DESIGN.spacing.bulletGap;
         }
 
         if (hiddenCount > 0) {
