@@ -95,10 +95,30 @@ function buildEngineOptions() {
     };
 }
 
+async function loadPdfFont() {
+    const response = await fetch(
+        'executive-slide-engine/fonts/Inter-Regular.ttf'
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            'Unable to load executive-slide-engine/fonts/Inter-Regular.ttf'
+        );
+    }
+
+    return new Uint8Array(
+        await response.arrayBuffer()
+    );
+}
+
 async function generateExecutivePdf() {
-    const report = buildReportJson();
-    const engine = getExecutiveSlideEngine();
-    const options = buildEngineOptions();
+   const report = buildReportJson();
+   const engine = getExecutiveSlideEngine();
+   const fontBytes = await loadPdfFont();
+   const options = {
+    ...buildEngineOptions(),
+    fontBytes
+};
 
     console.log('PDF Engine v2 input', {
         report,
