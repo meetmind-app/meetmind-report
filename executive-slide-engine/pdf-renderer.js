@@ -2226,6 +2226,7 @@ const bold =
                 : String(value);
 
         return text
+            .replace(/\p{Extended_Pictographic}/gu, '')
             .replace(/\t/g, ' ')
             .replace(/[ ]{2,}/g, ' ')
             .trim();
