@@ -636,13 +636,6 @@ toggleSection('#detailsSection', hasDetails);
 }
 
 async function loadReportPayload() {
-
-    // ===== LOCAL MODE =====
-    const response = await fetch("./pdf-engine/benchmarks/enterprise-cards.json");
-    return await response.json();
-
-    // ===== REMOTE MODE =====
-    /*
     const response = await fetch(
         `${REPORT_ENDPOINT}?token=${encodeURIComponent(currentToken)}`
     );
@@ -650,8 +643,8 @@ async function loadReportPayload() {
     if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
     }
+
     return await response.json();
-    */
 }
 
 async function loadReport() {
