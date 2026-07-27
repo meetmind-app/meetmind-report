@@ -397,7 +397,19 @@ return clamp(
     66,
     maxHeight
 );
-    }
+}
+
+    function estimateTasksHeight(report) {
+    const count =
+        Array.isArray(report.tasks)
+            ? report.tasks.length
+            : 0;
+    return clamp(
+        44 + count * 18,
+        72,
+        150
+    );
+}
 
     /**
      * Architecture remains compact and visually subordinate
