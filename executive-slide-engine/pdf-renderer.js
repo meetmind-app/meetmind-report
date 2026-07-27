@@ -860,12 +860,18 @@
             }
 
             const taskResult =
+        drawText(ctx, {
+        text: textValue(task.title, '—'),
+        ...
+    });
+            
+    const ownerResult =
     drawText(ctx, {
     text:
-        textValue(
-    task.title,
-    '—'
-),
+        textValue(task.owner, '—'),
+        ...
+    });
+            
     x,
     yTop,
     size:
@@ -878,12 +884,13 @@
     maxLines: 2
 });
 
-drawText(ctx, {
+const dueResult =
+    drawText(ctx, {
     text:
-        textValue(
-            task.owner,
-            '—'
-        ),
+        textValue(task.due, '—'),
+        ...
+    });
+        
     x:
         x +
         taskWidth +
@@ -922,8 +929,15 @@ drawText(ctx, {
     maxLines: 1
 });
 
+const rowHeight =
+    Math.max(
+        taskResult.height,
+        ownerResult.height,
+        dueResult.height
+    );
+
 yTop +=
-    taskResult.height +
+    rowHeight +
     DESIGN.spacing.bulletGap;
         }
 
