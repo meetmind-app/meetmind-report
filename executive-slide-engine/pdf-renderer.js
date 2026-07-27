@@ -379,34 +379,7 @@
             block,
             'Tasks'
         );
-
-        drawText(ctx,{
-    text:'Task',
-    x,
-    yTop,
-    size:7,
-    fontName:'bold',
-    colorName:'secondary'
-});
-
-drawText(ctx,{
-    text:'Owner',
-    x: ownerX,
-    yTop,
-    size:7,
-    fontName:'bold',
-    colorName:'secondary'
-});
-
-drawText(ctx,{
-    text:'Due',
-    x: dueX,
-    yTop,
-    size:7,
-    fontName:'bold',
-    colorName:'secondary'
-});
-
+      
         drawTaskList(
             ctx,
             block,
