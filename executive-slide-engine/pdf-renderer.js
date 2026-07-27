@@ -380,6 +380,33 @@
             'Tasks'
         );
 
+        drawText(ctx,{
+    text:'Task',
+    x,
+    yTop,
+    size:7,
+    fontName:'bold',
+    colorName:'secondary'
+});
+
+drawText(ctx,{
+    text:'Owner',
+    x: ownerX,
+    yTop,
+    size:7,
+    fontName:'bold',
+    colorName:'secondary'
+});
+
+drawText(ctx,{
+    text:'Due',
+    x: dueX,
+    yTop,
+    size:7,
+    fontName:'bold',
+    colorName:'secondary'
+});
+
         drawTaskList(
             ctx,
             block,
@@ -387,6 +414,7 @@
             {
                 maxItems:
                     DESIGN.limits.taskItems
+                headerHeight: 12
             }
         );
     }
@@ -806,7 +834,8 @@
         contentTop(
             block,
             roleStyle
-        );
+       ) +
+    (options.headerHeight || 0);
 
     const maxWidth =
         block.width -
@@ -940,9 +969,7 @@
                 dueResult.height
             );
 
-        yTop +=
-            rowHeight +
-            DESIGN.spacing.bulletGap;
+        yTop += rowHeight;
     }
 
     if (hiddenCount > 0) {
