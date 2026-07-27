@@ -195,7 +195,7 @@
         ]);
 
         const fonts = await loadFonts(
-        console.log('Loaded fonts', fonts);
+        console.log('Loaded fonts', fonts));
             pdf,
             StandardFonts,
             options,
