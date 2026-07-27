@@ -411,6 +411,27 @@ return clamp(
     );
 }
 
+    function estimateDensity(id, report) {
+    const items = getItems(
+        id,
+        report
+    );
+
+    const count =
+        items.length;
+
+    if (count <= 3) {
+        return 'expanded';
+    }
+
+    if (count <= 6) {
+        return 'normal';
+    }
+
+    return 'compact';
+}
+
+    
     /**
      * Architecture remains compact and visually subordinate
      * to the main analytical blocks.
