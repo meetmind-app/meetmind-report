@@ -195,12 +195,13 @@
         ]);
 
         const fonts = await loadFonts(
-        console.log('Loaded fonts', fonts));
+        
             pdf,
             StandardFonts,
             options,
             report
         );
+        console.log('Loaded fonts', fonts);
 
         const enabledBlockIds = new Set(
             blocks.map(block => block.id)
