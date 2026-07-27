@@ -345,13 +345,36 @@
         const count = items.length;
 
         const baseHeight = 38;
-        const itemHeight = id === 'tasks' ? 15 : 14;
 
-        return clamp(
-            baseHeight + count * itemHeight,
-            66,
-            id === 'tasks' ? 96 : 88
-        );
+let itemHeight = 14;
+
+switch (id) {
+
+    case 'tasks':
+        itemHeight = 24;
+        break;
+
+    case 'decisions':
+    case 'insights':
+    case 'risks':
+        itemHeight = 18;
+        break;
+}
+
+const desiredHeight =
+    baseHeight +
+    count * itemHeight;
+
+const maxHeight =
+    id === 'tasks'
+        ? 180
+        : 140;
+
+return clamp(
+    desiredHeight,
+    66,
+    maxHeight
+);
     }
 
     /**
