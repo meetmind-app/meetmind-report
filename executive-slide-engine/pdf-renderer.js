@@ -1892,24 +1892,18 @@
                 pdf
             );
 
-            const regular =
-                await pdf.embedFont(
-                    regularFontBytes,
-                    {
-                        subset: true
-                    }
-                );
+           const regular =
+    await pdf.embedFont(
+        regularFontBytes
+    );
 
-            const bold =
-                boldFontBytes
-                    ? await pdf.embedFont(
-                        boldFontBytes,
-                        {
-                            subset: true
-                        }
-                    )
-                    : regular;
-
+const bold =
+    boldFontBytes
+        ? await pdf.embedFont(
+              boldFontBytes
+          )
+        : regular;
+            
             return {
                 regular,
                 bold,
