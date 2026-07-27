@@ -862,9 +862,9 @@
             drawText(ctx, {
     text:
         textValue(
-            task.task || task.title,
-            '—'
-        ),
+    task.title,
+    '—'
+),
     x,
     yTop,
     size:
@@ -901,10 +901,9 @@ drawText(ctx, {
 drawText(ctx, {
     text:
         textValue(
-            task.dueDate ||
-            task.deadline,
-            '—'
-        ),
+        task.due,
+        '—'
+),
     x:
         x +
         taskWidth +
