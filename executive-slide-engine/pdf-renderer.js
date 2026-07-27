@@ -413,7 +413,7 @@ drawText(ctx,{
             ctx.report.tasks,
             {
                 maxItems:
-                    DESIGN.limits.taskItems
+                    DESIGN.limits.taskItems,
                 headerHeight: 12
             }
         );
