@@ -1,4 +1,4 @@
-const API_BASE = 'https://zarubinscky.app.n8n.cloud/webhook';
+const API_BASE = 'https://vaddfiksldaebnzaccks.supabase.co/functions/v1';
 const REPORT_ENDPOINT = `${API_BASE}/report`;
 const DELETE_ENDPOINT = `${API_BASE}/report-delete`;
 const SAVE_ENDPOINT = `${API_BASE}/report-save`;
