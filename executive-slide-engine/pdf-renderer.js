@@ -776,6 +776,23 @@
     yTop +=
         DESIGN.spacing.bulletGap;
 }
+                if (hiddenCount > 0) {
+            drawText(ctx, {
+                text:
+                    `… +${hiddenCount} more`,
+                x: textX,
+                yTop,
+                size:
+                    roleStyle.bodySize,
+                lineHeight:
+                    roleStyle.lineHeight,
+                colorName: 'secondary',
+                fontName: 'regular',
+                maxWidth,
+                maxLines: 1
+            });
+        }
+    }
         
    function drawTaskList(
     ctx,
@@ -1775,9 +1792,9 @@
                     item.value
                 ).trim();
 
-                const description = textValue(
-                    item.description
-                ).trim();
+               const description = (
+    textValue(item.description) || ''
+).trim();
 
                 if (!title && description) {
                     return {
