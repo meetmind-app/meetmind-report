@@ -662,6 +662,8 @@
                 maxItems
             );
 
+        console.log('PDF Bullet Items', visibleItems);
+
         const hiddenCount =
             Math.max(
                 0,
