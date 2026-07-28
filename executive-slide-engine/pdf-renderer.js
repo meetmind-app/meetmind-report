@@ -650,7 +650,7 @@
             style(block.role);
 
         const normalized =
-            normalizeListItems(items);
+            normalizeBulletItems(items);
 
         const maxItems =
             options.maxItems ||
