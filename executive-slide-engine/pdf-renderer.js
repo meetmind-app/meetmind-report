@@ -1763,6 +1763,7 @@
     // ============================================================
 
     function normalizeBulletItems(items) {
+        console.log('normalizeBulletItems input', items);
     if (!Array.isArray(items)) {
         return [];
     }
