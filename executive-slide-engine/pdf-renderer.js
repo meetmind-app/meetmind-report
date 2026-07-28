@@ -1799,8 +1799,9 @@
                     item.value
                 ).trim();
 
-               const description = (
-    textValue(item.description) || ''
+               const description = textValue(
+    item.description,
+    item.details
 ).trim();
 
                 if (!title && description) {
