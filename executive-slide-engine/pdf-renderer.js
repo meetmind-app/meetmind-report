@@ -692,84 +692,91 @@
             rightLimit - textX;
 
         for (const item of visibleItems) {
-            const remainingHeight =
-                block.y +
-                block.height -
-                DESIGN.spacing.cardPadding -
-                yTop;
+    const remainingHeight =
+        block.y +
+        block.height -
+        DESIGN.spacing.cardPadding -
+        yTop;
 
-            if (remainingHeight <
-                roleStyle.lineHeight) {
-                break;
-            }
-
-            const lines =
-                wrapText(
-                    item,
-                    maxWidth,
-                    ctx.fonts.regular,
-                    roleStyle.bodySize
-                );
-
-            const maxLines =
-                Math.max(
-                    1,
-                    Math.floor(
-                        remainingHeight /
-                        roleStyle.lineHeight
-                    )
-                );
-
-            const renderedLines =
-                truncateLines(
-                    lines,
-                    maxLines
-                );
-
-            drawBullet(ctx, {
-                x,
-                yTop:
-                    yTop +
-                    roleStyle.bodySize * 0.45
-            });
-
-            drawLines(ctx, {
-                lines:
-                    renderedLines,
-                x: textX,
-                yTop,
-                size:
-                    roleStyle.bodySize,
-                lineHeight:
-                    roleStyle.lineHeight,
-                colorName: 'body',
-                fontName: 'regular'
-            });
-
-            yTop +=
-                renderedLines.length *
-                roleStyle.lineHeight +
-                DESIGN.spacing.bulletGap;
-        }
-
-        if (hiddenCount > 0) {
-            drawText(ctx, {
-                text:
-                    `… +${hiddenCount} more`,
-                x: textX,
-                yTop,
-                size:
-                    roleStyle.bodySize,
-                lineHeight:
-                    roleStyle.lineHeight,
-                colorName: 'secondary',
-                fontName: 'regular',
-                maxWidth,
-                maxLines: 1
-            });
-        }
+    if (remainingHeight <
+        roleStyle.lineHeight) {
+        break;
     }
 
+    drawBullet(ctx, {
+        x,
+        yTop:
+            yTop +
+            roleStyle.bodySize * 0.45
+    });
+
+    const titleLines =
+        truncateLines(
+            wrapText(
+                item.title,
+                maxWidth,
+                ctx.fonts.regular,
+                roleStyle.bodySize
+            ),
+            Math.max(
+                1,
+                Math.floor(
+                    remainingHeight /
+                    roleStyle.lineHeight
+                )
+            )
+        );
+
+    drawLines(ctx, {
+        lines: titleLines,
+        x: textX,
+        yTop,
+        size:
+            roleStyle.bodySize,
+        lineHeight:
+            roleStyle.lineHeight,
+        colorName: 'body',
+        fontName: 'regular'
+    });
+
+    yTop +=
+        titleLines.length *
+        roleStyle.lineHeight;
+
+    if (item.description) {
+        const descriptionLines =
+            truncateLines(
+                wrapText(
+                    item.description,
+                    maxWidth,
+                    ctx.fonts.regular,
+                    roleStyle.bodySize - 1
+                ),
+                2
+            );
+
+        drawLines(ctx, {
+            lines:
+                descriptionLines,
+            x: textX,
+            yTop,
+            size:
+                roleStyle.bodySize - 1,
+            lineHeight:
+                roleStyle.lineHeight,
+            colorName: 'secondary',
+            fontName: 'regular'
+        });
+
+        yTop +=
+            descriptionLines.length *
+            roleStyle.lineHeight;
+    }
+
+    yTop +=
+        DESIGN.spacing.bulletGap;
+}
+        
    function drawTaskList(
     ctx,
     block,
