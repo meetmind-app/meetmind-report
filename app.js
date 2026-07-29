@@ -577,6 +577,8 @@ function renderReport(payload) {
   }
 
   const report = normalizeReport(meeting.report || {});
+  console.log(report);
+  
   const title =
     meeting.meeting_title ||
     meeting.title ||
