@@ -147,7 +147,9 @@ function enrichReportForExecutivePdf(report) {
 }
 
 async function generateExecutivePdf() {
-   const report = buildReportJson();
+   // 6H.1: preserve source metadata (date) and Summary paragraph breaks
+   // before the report enters Composition/Layout/Renderer.
+   const report = enrichReportForExecutivePdf(buildReportJson());
    const engine = getExecutiveSlideEngine();
    const fontBytes = await loadPdfFont();
    const options = {
