@@ -329,23 +329,40 @@ function buildPdfOptionsHtml() {
 
 
 function syncPdfOptionsFromModal() {
-    document
-        .querySelectorAll('.mm-option input[data-option]')
-        .forEach(input => {
-            const key = input.dataset.option;
+    /*
+     * IMPORTANT: Modal.show() creates the modal DOM dynamically.
+     * Read checkbox state from the active modal only, so another stale/hidden
+     * .mm-option elsewhere on the page can never overwrite the user's choice.
+     */
+    const modal = document.querySelector('.mm-modal-overlay .mm-modal');
 
-            if (PDF_SELECTABLE_OPTIONS.includes(key)) {
-                pdfBuilderOptions[key] = input.checked;
-            }
-        });
+    if (!modal) {
+        console.warn('PDF Builder: active modal not found while syncing options');
+        return;
+    }
+
+    PDF_SELECTABLE_OPTIONS.forEach(key => {
+        const input = modal.querySelector(
+            `.mm-option input[data-option="${key}"]`
+        );
+
+        if (input) {
+            pdfBuilderOptions[key] = Boolean(input.checked);
+        }
+    });
 
     // Brand chrome is mandatory and is never user-selectable.
     pdfBuilderOptions.header = true;
     pdfBuilderOptions.footer = true;
+
+    console.log('PDF Builder selected options', { ...pdfBuilderOptions });
 }
 
 function bindPdfOptions() {
-    document
+    const modal = document.querySelector('.mm-modal-overlay .mm-modal');
+    if (!modal) return;
+
+    modal
         .querySelectorAll('.mm-option input[data-option]')
         .forEach(input => {
             input.addEventListener('change', syncPdfOptionsFromModal);
