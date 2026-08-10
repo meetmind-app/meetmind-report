@@ -328,20 +328,27 @@ function buildPdfOptionsHtml() {
 }
 
 
+function syncPdfOptionsFromModal() {
+    document
+        .querySelectorAll('.mm-option input[data-option]')
+        .forEach(input => {
+            const key = input.dataset.option;
+
+            if (PDF_SELECTABLE_OPTIONS.includes(key)) {
+                pdfBuilderOptions[key] = input.checked;
+            }
+        });
+
+    // Brand chrome is mandatory and is never user-selectable.
+    pdfBuilderOptions.header = true;
+    pdfBuilderOptions.footer = true;
+}
+
 function bindPdfOptions() {
     document
-        .querySelectorAll('.mm-option input')
+        .querySelectorAll('.mm-option input[data-option]')
         .forEach(input => {
-            input.addEventListener('change', event => {
-                const key = event.target.dataset.option;
-
-                if (!(key in pdfBuilderOptions)) {
-                    return;
-                }
-
-                pdfBuilderOptions[key] =
-                    event.target.checked;
-            });
+            input.addEventListener('change', syncPdfOptionsFromModal);
         });
 }
 
@@ -354,7 +361,7 @@ function resetPdfBuilderOptions() {
 function setPdfExportPending(isPending) {
     const exportButton =
         document.querySelector(
-            '[data-modal-action="export"], ' +
+            '[data-action="export"], ' +
             '#export, ' +
             '.mm-modal-button-primary'
         );
@@ -452,6 +459,9 @@ function showPdfBuilder() {
                     'mm-modal-button-primary',
 
                 async onClick() {
+                    // Read the live checkbox state immediately before generation.
+                    // This makes the modal UI the source of truth for this export.
+                    syncPdfOptionsFromModal();
                     setPdfExportPending(true);
 
                     try {
