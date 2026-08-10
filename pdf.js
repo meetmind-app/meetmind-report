@@ -97,12 +97,12 @@ function buildEngineOptions() {
 
 async function loadPdfFont() {
     const response = await fetch(
-        'executive-slide-engine/fonts/Inter-Regular.ttf'
+        '../meetmind-pdf-engine/fonts/Inter-Regular.ttf'
     );
 
     if (!response.ok) {
         throw new Error(
-            'Unable to load executive-slide-engine/fonts/Inter-Regular.ttf'
+            'Unable to load ../meetmind-pdf-engine/fonts/Inter-Regular.ttf'
         );
     }
 
@@ -143,6 +143,16 @@ function enrichReportForExecutivePdf(report) {
         if (!enriched.meeting_date) enriched.meeting_date = rawDate;
     }
 
+    // report_language is the canonical language stored on meetings.
+    // Keep language as a compatibility alias for engine versions that read it from report.
+    const rawLanguage =
+        meeting.report_language || meeting.language || currentLang || 'en';
+    const language = ['en', 'ru', 'es', 'pt'].includes(String(rawLanguage).toLowerCase())
+        ? String(rawLanguage).toLowerCase()
+        : 'en';
+    enriched.report_language = language;
+    enriched.language = language;
+
     return enriched;
 }
 
@@ -152,9 +162,14 @@ async function generateExecutivePdf() {
    const report = enrichReportForExecutivePdf(buildReportJson());
    const engine = getExecutiveSlideEngine();
    const fontBytes = await loadPdfFont();
+   const language = report.report_language || report.language || currentLang || 'en';
    const options = {
     ...buildEngineOptions(),
-    fontBytes
+    fontBytes,
+    // Pass both names intentionally: current engine can consume language,
+    // while report_language mirrors the DB contract and keeps the boundary explicit.
+    language,
+    report_language: language
 };
 
     console.log('PDF Engine v2 input', {
