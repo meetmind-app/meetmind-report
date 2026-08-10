@@ -568,7 +568,10 @@ function renderTranscript(transcript) {
 function renderReport(payload) {
   const meeting = payload.meeting;
   currentMeeting = meeting;
-  currentLang = ['en', 'ru', 'es', 'pt'].includes(meeting.language) ? meeting.language : 'en';
+  const sourceLang = meeting.report_language || meeting.language || payload.language || 'en';
+  currentLang = ['en', 'ru', 'es', 'pt'].includes(String(sourceLang).toLowerCase())
+    ? String(sourceLang).toLowerCase()
+    : 'en';
   setLabels();
 
   if (meeting.status === 'deleted' || meeting.deleted_at) {
