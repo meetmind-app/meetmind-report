@@ -31,19 +31,67 @@ const PDF_BUILDER_DEFAULT = {
     footer: true
 };
 
-const PDF_OPTION_LABELS = {
-    header: 'Header',
-    stats: 'Meeting Statistics',
-    metrics: 'Key Metrics',
-    summary: 'Executive Summary',
-    decisions: 'Decisions',
-    tasks: 'Tasks',
-    risks: 'Risks',
-    insights: 'Insights',
-    owners: 'Owners',
-    architecture: 'Architecture',
-    footer: 'Footer'
+const PDF_SELECTABLE_OPTIONS = [
+    'stats',
+    'metrics',
+    'summary',
+    'decisions',
+    'tasks',
+    'risks',
+    'insights',
+    'owners',
+    'architecture'
+];
+
+const PDF_UI_I18N = {
+    en: {
+        title: 'Export PDF',
+        hint: 'Choose sections to include in the PDF',
+        cancel: 'Cancel',
+        export: 'Export PDF',
+        errorTitle: 'PDF export failed',
+        close: 'Close',
+        options: { stats: 'Meeting Statistics', metrics: 'Key Metrics', summary: 'Executive Summary', decisions: 'Decisions', tasks: 'Tasks', risks: 'Risks', insights: 'Insights', owners: 'Owners', architecture: 'Architecture & Process' }
+    },
+    ru: {
+        title: 'Экспорт PDF',
+        hint: 'Выберите разделы для PDF',
+        cancel: 'Отмена',
+        export: 'Экспорт PDF',
+        errorTitle: 'Не удалось создать PDF',
+        close: 'Закрыть',
+        options: { stats: 'Статистика встречи', metrics: 'Ключевые метрики', summary: 'Резюме встречи', decisions: 'Решения', tasks: 'Задачи', risks: 'Риски', insights: 'Инсайты', owners: 'Владельцы', architecture: 'Архитектура и процесс' }
+    },
+    es: {
+        title: 'Exportar PDF',
+        hint: 'Elige las secciones que se incluirán en el PDF',
+        cancel: 'Cancelar',
+        export: 'Exportar PDF',
+        errorTitle: 'No se pudo exportar el PDF',
+        close: 'Cerrar',
+        options: { stats: 'Estadísticas de la reunión', metrics: 'Métricas clave', summary: 'Resumen ejecutivo', decisions: 'Decisiones', tasks: 'Tareas', risks: 'Riesgos', insights: 'Insights', owners: 'Responsables', architecture: 'Arquitectura y proceso' }
+    },
+    pt: {
+        title: 'Exportar PDF',
+        hint: 'Escolha as seções que serão incluídas no PDF',
+        cancel: 'Cancelar',
+        export: 'Exportar PDF',
+        errorTitle: 'Falha ao exportar PDF',
+        close: 'Fechar',
+        options: { stats: 'Estatísticas da reunião', metrics: 'Métricas principais', summary: 'Resumo executivo', decisions: 'Decisões', tasks: 'Tarefas', risks: 'Riscos', insights: 'Insights', owners: 'Responsáveis', architecture: 'Arquitetura e processo' }
+    }
 };
+
+function getPdfUiLanguage() {
+    const raw = currentMeeting?.report_language || currentMeeting?.language || currentLang || document.documentElement.lang || 'en';
+    const lang = String(raw).toLowerCase().split('-')[0];
+    return PDF_UI_I18N[lang] ? lang : 'en';
+}
+
+function getPdfUiText() {
+    return PDF_UI_I18N[getPdfUiLanguage()];
+}
+
 
 let pdfBuilderOptions = {
     ...PDF_BUILDER_DEFAULT
@@ -263,19 +311,22 @@ function downloadPdfBlob(blob, filename) {
 }
 
 function buildPdfOptionsHtml() {
-    return Object.entries(pdfBuilderOptions)
-        .map(([key, value]) => `
+    const ui = getPdfUiText();
+
+    return PDF_SELECTABLE_OPTIONS
+        .map(key => `
             <label class="mm-option">
                 <input
                     type="checkbox"
                     data-option="${key}"
-                    ${value ? 'checked' : ''}
+                    ${pdfBuilderOptions[key] ? 'checked' : ''}
                 >
-                <span>${PDF_OPTION_LABELS[key]}</span>
+                <span>${ui.options[key]}</span>
             </label>
         `)
         .join('');
 }
+
 
 function bindPdfOptions() {
     document
@@ -335,7 +386,7 @@ function showPdfExportError(error) {
         typeof window.Modal.show === 'function'
     ) {
         window.Modal.show({
-            title: 'PDF export failed',
+            title: getPdfUiText().errorTitle,
             content: `
                 <div class="mm-pdf-error">
                     ${escapePdfHtml(message)}
@@ -344,7 +395,7 @@ function showPdfExportError(error) {
             actions: [
                 {
                     id: 'close',
-                    label: 'Close',
+                    label: getPdfUiText().close,
                     onClick() {
                         Modal.close();
                     }
@@ -371,20 +422,24 @@ function escapePdfHtml(value) {
 
 function showPdfBuilder() {
     resetPdfBuilderOptions();
+    const ui = getPdfUiText();
 
     Modal.show({
-        title: 'Export PDF',
+        title: ui.title,
 
         content: `
-            <div class="mm-pdf-options">
-                ${buildPdfOptionsHtml()}
+            <div class="mm-pdf-builder">
+                <p class="mm-pdf-options-hint">${ui.hint}</p>
+                <div class="mm-pdf-options">
+                    ${buildPdfOptionsHtml()}
+                </div>
             </div>
         `,
 
         actions: [
             {
                 id: 'cancel',
-                label: 'Cancel',
+                label: ui.cancel,
                 onClick() {
                     Modal.close();
                 }
@@ -392,7 +447,7 @@ function showPdfBuilder() {
 
             {
                 id: 'export',
-                label: 'Export PDF',
+                label: ui.export,
                 className:
                     'mm-modal-button-primary',
 
