@@ -130,16 +130,22 @@ function getExecutiveSlideEngine() {
 
 function buildEngineOptions() {
     /*
-     * Block IDs intentionally match block-registry.js:
-     * header, stats, summary, decisions, tasks, risks,
-     * insights, owners, architecture, metrics, footer.
-     *
-     * The engine receives only the current UI state.
-     * It remains responsible for resolving enabled blocks,
-     * creating the layout and rendering the PDF.
+     * ExecutiveSlideEngine 1.4.x reads block visibility from a nested
+     * options.visibility object. Keep the flat booleans as compatibility
+     * aliases, but make visibility the canonical contract.
      */
+    const visibility = Object.fromEntries(
+        PDF_SELECTABLE_OPTIONS.map(key => [
+            key,
+            pdfBuilderOptions[key] !== false
+        ])
+    );
+
     return {
-        ...pdfBuilderOptions
+        ...pdfBuilderOptions,
+        visibility,
+        header: true,
+        footer: true
     };
 }
 
@@ -222,7 +228,8 @@ async function generateExecutivePdf() {
 
     console.log('PDF Engine v2 input', {
         report,
-        options
+        options,
+        visibility: options.visibility
     });
 
     const result = await engine.generate(
@@ -329,40 +336,23 @@ function buildPdfOptionsHtml() {
 
 
 function syncPdfOptionsFromModal() {
-    /*
-     * IMPORTANT: Modal.show() creates the modal DOM dynamically.
-     * Read checkbox state from the active modal only, so another stale/hidden
-     * .mm-option elsewhere on the page can never overwrite the user's choice.
-     */
-    const modal = document.querySelector('.mm-modal-overlay .mm-modal');
+    document
+        .querySelectorAll('.mm-option input[data-option]')
+        .forEach(input => {
+            const key = input.dataset.option;
 
-    if (!modal) {
-        console.warn('PDF Builder: active modal not found while syncing options');
-        return;
-    }
-
-    PDF_SELECTABLE_OPTIONS.forEach(key => {
-        const input = modal.querySelector(
-            `.mm-option input[data-option="${key}"]`
-        );
-
-        if (input) {
-            pdfBuilderOptions[key] = Boolean(input.checked);
-        }
-    });
+            if (PDF_SELECTABLE_OPTIONS.includes(key)) {
+                pdfBuilderOptions[key] = input.checked;
+            }
+        });
 
     // Brand chrome is mandatory and is never user-selectable.
     pdfBuilderOptions.header = true;
     pdfBuilderOptions.footer = true;
-
-    console.log('PDF Builder selected options', { ...pdfBuilderOptions });
 }
 
 function bindPdfOptions() {
-    const modal = document.querySelector('.mm-modal-overlay .mm-modal');
-    if (!modal) return;
-
-    modal
+    document
         .querySelectorAll('.mm-option input[data-option]')
         .forEach(input => {
             input.addEventListener('change', syncPdfOptionsFromModal);
