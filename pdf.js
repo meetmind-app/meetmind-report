@@ -111,6 +111,41 @@ async function loadPdfFont() {
     );
 }
 
+
+function enrichReportForExecutivePdf(report) {
+    const enriched = { ...(report || {}) };
+
+    // buildReportJson() currently normalizes DOM text and therefore destroys paragraph breaks.
+    // PDF owns a presentation-preserving read of the same visible Summary block.
+    const summaryEl = document.getElementById('summaryContent');
+    const rawSummary = summaryEl?.innerText?.replace(/\r\n?/g, '\n').trim();
+    if (rawSummary) {
+        enriched.summary = rawSummary;
+        enriched.executive_summary = rawSummary;
+    }
+
+    // Preserve meeting metadata from the source object even when buildReportJson() does not
+    // explicitly project it into the UI-derived payload.
+    const meeting = currentMeeting || {};
+    const sourceReport = meeting.report || {};
+    const metadata = sourceReport.metadata || meeting.metadata || {};
+    const rawDate =
+        enriched.date || enriched.meeting_date || enriched.meeting_datetime ||
+        sourceReport.date || sourceReport.meeting_date || sourceReport.meeting_datetime ||
+        meeting.date || meeting.meeting_date || meeting.meeting_datetime ||
+        meeting.started_at || meeting.created_at ||
+        sourceReport.started_at || sourceReport.created_at ||
+        metadata.date || metadata.meeting_date || metadata.started_at || metadata.created_at ||
+        null;
+
+    if (rawDate) {
+        enriched.date = rawDate;
+        if (!enriched.meeting_date) enriched.meeting_date = rawDate;
+    }
+
+    return enriched;
+}
+
 async function generateExecutivePdf() {
    const report = buildReportJson();
    const engine = getExecutiveSlideEngine();
