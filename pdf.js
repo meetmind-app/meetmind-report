@@ -130,16 +130,25 @@ function getExecutiveSlideEngine() {
 
 function buildEngineOptions() {
     /*
-     * Block IDs intentionally match block-registry.js:
-     * header, stats, summary, decisions, tasks, risks,
-     * insights, owners, architecture, metrics, footer.
+     * UI checkbox IDs use renderer-facing aliases (stats, summary, metrics, ...).
+     * ExecutiveSlideEngine.normalizeVisibility() intentionally reads the
+     * visibility object and maps those aliases to canonical Composition IDs.
      *
-     * The engine receives only the current UI state.
-     * It remains responsible for resolving enabled blocks,
-     * creating the layout and rendering the PDF.
+     * Keep the flat values as compatibility aliases, but visibility is the
+     * authoritative contract for Composition.
      */
+    const visibility = Object.fromEntries(
+        PDF_SELECTABLE_OPTIONS.map(key => [
+            key,
+            pdfBuilderOptions[key] !== false
+        ])
+    );
+
     return {
-        ...pdfBuilderOptions
+        ...pdfBuilderOptions,
+        header: true,
+        footer: true,
+        visibility
     };
 }
 
@@ -222,7 +231,8 @@ async function generateExecutivePdf() {
 
     console.log('PDF Engine v2 input', {
         report,
-        options
+        options,
+        visibility: options.visibility
     });
 
     const result = await engine.generate(
@@ -479,6 +489,16 @@ function showPdfBuilder() {
                     // Read the live checkbox state immediately before generation.
                     // This makes the modal UI the source of truth for this export.
                     syncPdfOptionsFromModal();
+
+                    const hasVisibleContent = PDF_SELECTABLE_OPTIONS.some(
+                        key => pdfBuilderOptions[key] !== false
+                    );
+
+                    if (!hasVisibleContent) {
+                        updatePdfExportButtonState();
+                        return;
+                    }
+
                     setPdfExportPending(true);
 
                     try {
