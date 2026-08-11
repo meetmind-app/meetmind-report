@@ -8,7 +8,11 @@
  * buildReportJson()
  *     -> ExecutiveSlideEngine.generate(report, options)
  *     -> Uint8Array / ArrayBuffer / Blob
- *     -> browser download
+ *     -> native mobile file share / browser download
+ *
+ * Patch 7.3.3:
+ * Mobile Telegram WebViews receive the generated PDF as a File instead of
+ * opening an ephemeral blob: URL that Telegram may share as a broken link.
  */
 
 'use strict';
@@ -245,11 +249,12 @@ async function generateExecutivePdf() {
         sanitizePdfFilename(getPdfTitle()) +
         PDF_CONFIG.fileSuffix;
 
-    downloadPdfBlob(blob, filename);
+    const delivery = await deliverPdfBlob(blob, filename);
 
     console.log('PDF Engine v2 export complete', {
         filename,
-        size: blob.size
+        size: blob.size,
+        delivery
     });
 }
 
@@ -297,6 +302,100 @@ function normalizePdfResult(result) {
         'Executive Slide Engine returned an unsupported PDF result. ' +
         'Expected Blob, Uint8Array, ArrayBuffer or another ArrayBuffer view.'
     );
+}
+
+function isMobilePdfShareTarget() {
+    const telegramPlatform = String(
+        window.Telegram?.WebApp?.platform || ''
+    ).toLowerCase();
+
+    if (
+        telegramPlatform === 'ios' ||
+        telegramPlatform === 'android'
+    ) {
+        return true;
+    }
+
+    const userAgent = String(
+        window.navigator?.userAgent || ''
+    );
+
+    return /Android|iPhone|iPad|iPod/i.test(userAgent);
+}
+
+function createPdfFile(blob, filename) {
+    if (typeof File !== 'function') {
+        return null;
+    }
+
+    return new File(
+        [blob],
+        filename,
+        {
+            type: 'application/pdf',
+            lastModified: Date.now()
+        }
+    );
+}
+
+function canSharePdfFile(file) {
+    if (
+        !file ||
+        typeof navigator.share !== 'function' ||
+        typeof navigator.canShare !== 'function'
+    ) {
+        return false;
+    }
+
+    try {
+        return navigator.canShare({ files: [file] });
+    } catch (error) {
+        console.warn(
+            'PDF file sharing capability check failed.',
+            error
+        );
+
+        return false;
+    }
+}
+
+async function sharePdfFile(file) {
+    try {
+        // Do not include url/text: Telegram must receive the PDF itself,
+        // never the temporary blob: address of the preview.
+        await navigator.share({ files: [file] });
+        return 'shared';
+    } catch (error) {
+        // User cancellation is a successful, intentional end state.
+        // Falling back here would unexpectedly reopen the PDF preview.
+        if (error?.name === 'AbortError') {
+            return 'cancelled';
+        }
+
+        console.warn(
+            'Native PDF file share failed; falling back to browser download.',
+            error
+        );
+
+        return null;
+    }
+}
+
+async function deliverPdfBlob(blob, filename) {
+    if (isMobilePdfShareTarget()) {
+        const file = createPdfFile(blob, filename);
+
+        if (canSharePdfFile(file)) {
+            const shareResult = await sharePdfFile(file);
+
+            if (shareResult) {
+                return shareResult;
+            }
+        }
+    }
+
+    downloadPdfBlob(blob, filename);
+    return 'downloaded';
 }
 
 function downloadPdfBlob(blob, filename) {
