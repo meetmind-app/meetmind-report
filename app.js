@@ -713,14 +713,14 @@ ${tasks.map(task => `
         ${escapeHtml(task.task)}
     </div>
     ${visible(task.owner) ? `
-    <div class="task-meta">
+    <div class="task-meta task-owner">
         <strong>${escapeHtml(t('owner'))}:</strong>
         <span data-editable="true">
             ${escapeHtml(task.owner)}
         </span>
     </div>` : ''}
     ${visible(task.dueDate) ? `
-    <div class="task-meta">
+    <div class="task-meta task-due">
         <strong>${escapeHtml(t('dueDate'))}:</strong>
         <span class="due-badge"
               data-editable="true">
@@ -1056,6 +1056,44 @@ const metricsGrid = $('metricsContent');
 if (metricsGrid && !metricsGrid.querySelector('.metric-card')) {
     $('metricsSection').classList.add('hidden');
 }
+
+  // Tasks: cards are smartphone-only; table is tablet/desktop.
+  document.querySelectorAll('.task-table tbody tr').forEach(row => {
+    const taskCell = row.querySelector('td:first-child');
+    if (taskCell && !cleanText(taskCell.innerText)) row.remove();
+  });
+  document.querySelectorAll('.task-cards .task-card').forEach(card => {
+    const title = card.querySelector('.task-title');
+    if (title && !cleanText(title.innerText)) card.remove();
+  });
+  const activeTaskCount = window.matchMedia('(max-width: 767px)').matches
+    ? document.querySelectorAll('.task-cards .task-card').length
+    : document.querySelectorAll('.task-table tbody tr').length;
+  toggleSection('#tasksSection', activeTaskCount > 0);
+
+  // Owners: remove an owner card once both editable fields are empty.
+  document.querySelectorAll('.owner-card').forEach(card => {
+    const name = cleanText(card.querySelector('.owner-name')?.innerText);
+    const role = cleanText(card.querySelector('.owner-role')?.innerText);
+    if (!name && !role) card.remove();
+  });
+  toggleSection('#ownersSection', !!document.querySelector('.owner-card'));
+
+  // Architecture: if the editable architecture body is emptied, hide the block.
+  const architectureContent = $('architectureContent');
+  const architectureVisible = !!architectureContent && !!cleanText(architectureContent.innerText);
+  toggleSection('#architectureSection', architectureVisible);
+
+  // Summary: no empty outer card.
+  const summaryContent = $('summaryContent');
+  toggleSection('#summarySection', !!summaryContent && !!cleanText(summaryContent.innerText));
+
+  // Detailed report wrapper disappears when all detailed blocks are empty.
+  const hasDetails =
+    !$('#architectureSection')?.classList.contains('hidden') ||
+    !$('#ownersSection')?.classList.contains('hidden') ||
+    !$('#transcriptSection')?.classList.contains('hidden');
+  toggleSection('#detailsSection', hasDetails);
 }
 
 function buildReportJson() {
@@ -1097,6 +1135,19 @@ function buildReportJson() {
     }
 
     function collectTasks() {
+        // Smartphone UI edits cards; tablet/desktop edits the table.
+        // Read from the representation the user actually edited.
+        if (window.matchMedia('(max-width: 767px)').matches) {
+            return [...document.querySelectorAll('.task-cards .task-card')]
+                .map(card => ({
+                    task: cleanText(card.querySelector('.task-title')?.innerText),
+                    owner: cleanText(card.querySelector('.task-owner span')?.innerText),
+                    due_date: cleanText(card.querySelector('.due-badge')?.innerText),
+                    status: 'open'
+                }))
+                .filter(task => task.task);
+        }
+
         return [...document.querySelectorAll('.task-table tbody tr')]
             .map(row => {
                 const cells = row.querySelectorAll('td');
