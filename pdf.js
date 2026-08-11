@@ -48,7 +48,7 @@ const PDF_UI_I18N = {
         title: 'Export PDF',
         hint: 'Choose sections to include in the PDF',
         cancel: 'Cancel',
-        export: 'Export PDF',
+        export: 'Generate PDF',
         errorTitle: 'PDF export failed',
         close: 'Close',
         options: { stats: 'Meeting Statistics', metrics: 'Key Metrics', summary: 'Executive Summary', decisions: 'Decisions', tasks: 'Tasks', risks: 'Risks', insights: 'Insights', owners: 'Owners', architecture: 'Architecture & Process' }
@@ -57,7 +57,7 @@ const PDF_UI_I18N = {
         title: 'Экспорт PDF',
         hint: 'Выберите разделы для PDF',
         cancel: 'Отмена',
-        export: 'Экспорт PDF',
+        export: 'Сгенерировать PDF',
         errorTitle: 'Не удалось создать PDF',
         close: 'Закрыть',
         options: { stats: 'Статистика встречи', metrics: 'Ключевые метрики', summary: 'Резюме встречи', decisions: 'Решения', tasks: 'Задачи', risks: 'Риски', insights: 'Инсайты', owners: 'Владельцы', architecture: 'Архитектура и процесс' }
@@ -66,7 +66,7 @@ const PDF_UI_I18N = {
         title: 'Exportar PDF',
         hint: 'Elige las secciones que se incluirán en el PDF',
         cancel: 'Cancelar',
-        export: 'Exportar PDF',
+        export: 'Generar PDF',
         errorTitle: 'No se pudo exportar el PDF',
         close: 'Cerrar',
         options: { stats: 'Estadísticas de la reunión', metrics: 'Métricas clave', summary: 'Resumen ejecutivo', decisions: 'Decisiones', tasks: 'Tareas', risks: 'Riesgos', insights: 'Insights', owners: 'Responsables', architecture: 'Arquitectura y proceso' }
@@ -75,7 +75,7 @@ const PDF_UI_I18N = {
         title: 'Exportar PDF',
         hint: 'Escolha as seções que serão incluídas no PDF',
         cancel: 'Cancelar',
-        export: 'Exportar PDF',
+        export: 'Gerar PDF',
         errorTitle: 'Falha ao exportar PDF',
         close: 'Fechar',
         options: { stats: 'Estatísticas da reunião', metrics: 'Métricas principais', summary: 'Resumo executivo', decisions: 'Decisões', tasks: 'Tarefas', risks: 'Riscos', insights: 'Insights', owners: 'Responsáveis', architecture: 'Arquitetura e processo' }
@@ -130,22 +130,16 @@ function getExecutiveSlideEngine() {
 
 function buildEngineOptions() {
     /*
-     * ExecutiveSlideEngine 1.4.x reads block visibility from a nested
-     * options.visibility object. Keep the flat booleans as compatibility
-     * aliases, but make visibility the canonical contract.
+     * Block IDs intentionally match block-registry.js:
+     * header, stats, summary, decisions, tasks, risks,
+     * insights, owners, architecture, metrics, footer.
+     *
+     * The engine receives only the current UI state.
+     * It remains responsible for resolving enabled blocks,
+     * creating the layout and rendering the PDF.
      */
-    const visibility = Object.fromEntries(
-        PDF_SELECTABLE_OPTIONS.map(key => [
-            key,
-            pdfBuilderOptions[key] !== false
-        ])
-    );
-
     return {
-        ...pdfBuilderOptions,
-        visibility,
-        header: true,
-        footer: true
+        ...pdfBuilderOptions
     };
 }
 
@@ -228,8 +222,7 @@ async function generateExecutivePdf() {
 
     console.log('PDF Engine v2 input', {
         report,
-        options,
-        visibility: options.visibility
+        options
     });
 
     const result = await engine.generate(
