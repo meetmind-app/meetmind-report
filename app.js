@@ -12,6 +12,12 @@ const i18n = {
     editReport: 'Edit Report',
     saveChanges: 'Save Changes',
     cancelEdit: 'Cancel',
+    loadingTitle: 'Loading report…',
+    loadingText: 'MeetMind AI is preparing your meeting report.',
+    saveErrorTitle: 'Couldn’t save changes',
+    deleteErrorTitle: 'Couldn’t delete report',
+    errorTryAgain: 'Please try again.',
+    close: 'Close',
     deleteReport: 'Delete Report',
     executiveSummary: 'Executive Summary',
     keyMetrics: 'Key Metrics',
@@ -45,7 +51,7 @@ const i18n = {
     notFound: 'Report not found or no longer available.',
     missingToken: 'Report token is missing.',
     deleteTitle: 'Delete this report?',
-    deleteText: 'The report will stop being available through this link. It can be restored within 30 days.',
+    deleteText: 'The report will no longer be available through this link.',
     deleteConfirm: 'Delete report',
     cancel: 'Cancel',
     deleteDone: 'Report deleted.',
@@ -63,6 +69,12 @@ const i18n = {
     editReport: 'Редактировать',
     saveChanges: 'Сохранить',
     cancelEdit: 'Отменить',
+    loadingTitle: 'Загружаем отчёт…',
+    loadingText: 'MeetMind AI готовит отчёт по вашей встрече.',
+    saveErrorTitle: 'Не удалось сохранить изменения',
+    deleteErrorTitle: 'Не удалось удалить отчёт',
+    errorTryAgain: 'Попробуйте ещё раз.',
+    close: 'Закрыть',
     deleteReport: 'Удалить отчёт',
     executiveSummary: 'Резюме встречи',
     keyMetrics: 'Ключевые метрики',
@@ -96,7 +108,7 @@ const i18n = {
     notFound: 'Отчёт не найден или больше недоступен.',
     missingToken: 'Не передан токен отчёта.',
     deleteTitle: 'Удалить этот отчёт?',
-    deleteText: 'Отчёт перестанет быть доступен по этой ссылке. Его можно восстановить в течение 30 дней.',
+    deleteText: 'Отчёт больше не будет доступен по этой ссылке.',
     deleteConfirm: 'Удалить отчёт',
     cancel: 'Отменить',
     deleteDone: 'Отчёт удалён.',
@@ -114,6 +126,12 @@ const i18n = {
     editReport: 'Editar informe',
     saveChanges: 'Guardar cambios',
     cancelEdit: 'Cancelar',
+    loadingTitle: 'Cargando informe…',
+    loadingText: 'MeetMind AI está preparando el informe de tu reunión.',
+    saveErrorTitle: 'No se pudieron guardar los cambios',
+    deleteErrorTitle: 'No se pudo eliminar el informe',
+    errorTryAgain: 'Inténtalo de nuevo.',
+    close: 'Cerrar',
     deleteReport: 'Eliminar informe',
     executiveSummary: 'Resumen ejecutivo',
     keyMetrics: 'Métricas clave',
@@ -147,7 +165,7 @@ const i18n = {
     notFound: 'Informe no encontrado o ya no disponible.',
     missingToken: 'Falta el token del informe.',
     deleteTitle: '¿Eliminar este informe?',
-    deleteText: 'El informe dejará de estar disponible mediante este enlace. Puede restaurarse durante 30 días.',
+    deleteText: 'El informe dejará de estar disponible mediante este enlace.',
     deleteConfirm: 'Eliminar informe',
     cancel: 'Cancelar',
     deleteDone: 'Informe eliminado.',
@@ -165,6 +183,12 @@ const i18n = {
     editReport: 'Editar relatório',
     saveChanges: 'Salvar alterações',
     cancelEdit: 'Cancelar',
+    loadingTitle: 'Carregando relatório…',
+    loadingText: 'O MeetMind AI está preparando o relatório da sua reunião.',
+    saveErrorTitle: 'Não foi possível salvar as alterações',
+    deleteErrorTitle: 'Não foi possível excluir o relatório',
+    errorTryAgain: 'Tente novamente.',
+    close: 'Fechar',
     deleteReport: 'Excluir relatório',
     executiveSummary: 'Resumo executivo',
     keyMetrics: 'Métricas principais',
@@ -198,7 +222,7 @@ const i18n = {
     notFound: 'Relatório não encontrado ou indisponível.',
     missingToken: 'O token do relatório está ausente.',
     deleteTitle: 'Excluir este relatório?',
-    deleteText: 'O relatório deixará de estar disponível por este link. Ele poderá ser restaurado por 30 dias.',
+    deleteText: 'O relatório deixará de estar disponível por este link.',
     deleteConfirm: 'Excluir relatório',
     cancel: 'Cancelar',
     deleteDone: 'Relatório excluído.',
@@ -219,6 +243,41 @@ const $ = (id) => document.getElementById(id);
 
 function t(key) {
   return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+}
+
+
+function detectInitialLanguage() {
+  const params = new URLSearchParams(window.location.search);
+  const requested = String(params.get('lang') || '').toLowerCase();
+  if (['en', 'ru', 'es', 'pt'].includes(requested)) return requested;
+
+  const browserLang = String(navigator.language || navigator.userLanguage || 'en').toLowerCase();
+  if (browserLang.startsWith('ru')) return 'ru';
+  if (browserLang.startsWith('es')) return 'es';
+  if (browserLang.startsWith('pt')) return 'pt';
+  return 'en';
+}
+
+function setLoadingLabels() {
+  document.documentElement.lang = currentLang;
+  const title = $('loadingTitle');
+  const text = $('loadingText');
+  if (title) title.textContent = t('loadingTitle');
+  if (text) text.textContent = t('loadingText');
+}
+
+function showFeedbackModal(title, message) {
+  const modal = $('feedbackModal');
+  if (!modal) return;
+  $('feedbackModalTitle').textContent = title;
+  $('feedbackModalText').textContent = message;
+  $('feedbackModalClose').textContent = t('close');
+  modal.classList.remove('hidden');
+}
+
+function hideFeedbackModal() {
+  const modal = $('feedbackModal');
+  if (modal) modal.classList.add('hidden');
 }
 
 function escapeHtml(value) {
@@ -854,6 +913,10 @@ function bindActions() {
 
 });
   $('cancelDeleteBtn').addEventListener('click', () => $('deleteModal').classList.add('hidden'));
+  $('feedbackModalClose').addEventListener('click', hideFeedbackModal);
+  $('feedbackModal').addEventListener('click', (event) => {
+    if (event.target === $('feedbackModal')) hideFeedbackModal();
+  });
 
   $('confirmDeleteBtn').addEventListener('click', async () => {
     if (!currentToken) return;
@@ -873,7 +936,7 @@ function bindActions() {
       setTimeout(showDeletedState, 350);
     } catch (error) {
       console.error(error);
-      showToast(t('deleteFailed'));
+      showFeedbackModal(t('deleteErrorTitle'), t('errorTryAgain'));
     }
   });
 
@@ -907,7 +970,7 @@ function toggleEditMode() {
             })
             .catch(err => {
                 console.error('Save error:', err);
-                alert(t('saveFailed'));
+                showFeedbackModal(t('saveErrorTitle'), t('errorTryAgain'));
             });
     }
 
@@ -1147,4 +1210,6 @@ function toggleSection(selector, visible) {
 }
 
 
+currentLang = detectInitialLanguage();
+setLoadingLabels();
 loadReport();
