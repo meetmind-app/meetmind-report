@@ -247,21 +247,18 @@ function t(key) {
 
 
 function detectInitialLanguage() {
-  const params = new URLSearchParams(window.location.search);
-  const requested = String(params.get('lang') || '').toLowerCase();
-  if (['en', 'ru', 'es', 'pt'].includes(requested)) return requested;
-
-  const browserLang = String(navigator.language || navigator.userLanguage || 'en').toLowerCase();
-  if (browserLang.startsWith('ru')) return 'ru';
-  if (browserLang.startsWith('es')) return 'es';
-  if (browserLang.startsWith('pt')) return 'pt';
+  // Before the report payload arrives we do not yet know report_language.
+  // Product default is English; never infer the report language from the browser.
   return 'en';
 }
 
 function setLoadingLabels() {
   document.documentElement.lang = currentLang;
-  const title = $('loadingTitle');
-  const text = $('loadingText');
+
+  const loadingState = $('loadingState');
+  const title = $('loadingTitle') || loadingState?.querySelector('h1');
+  const text = $('loadingText') || loadingState?.querySelector('p');
+
   if (title) title.textContent = t('loadingTitle');
   if (text) text.textContent = t('loadingText');
 }
@@ -775,6 +772,7 @@ function renderReport(payload) {
   currentLang = ['en', 'ru', 'es', 'pt'].includes(String(sourceLang).toLowerCase())
     ? String(sourceLang).toLowerCase()
     : 'en';
+  setLoadingLabels();
   setLabels();
 
   if (meeting.status === 'deleted' || meeting.deleted_at) {
@@ -870,7 +868,9 @@ async function loadReport() {
     const payload = await loadReportPayload();
 
     if (!payload.success || !payload.meeting) {
-      currentLang = payload.language || 'en';
+      const errorLang = String(payload.language || 'en').toLowerCase();
+      currentLang = ['en', 'ru', 'es', 'pt'].includes(errorLang) ? errorLang : 'en';
+      setLoadingLabels();
       showError(t('notFound'));
       return;
     }
