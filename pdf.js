@@ -344,51 +344,35 @@ function syncPdfOptionsFromModal() {
     pdfBuilderOptions.footer = true;
 }
 
-function getSelectedPdfSectionCount() {
-    return Array
-        .from(document.querySelectorAll('.mm-option input[data-option]'))
-        .filter(input => input.checked)
-        .length;
-}
-
-function updatePdfExportAvailability() {
-    const exportButton =
-        document.querySelector(
-            '[data-action="export"], ' +
-            '#export, ' +
-            '.mm-modal-button-primary'
-        );
-
-    if (!exportButton) {
-        return;
-    }
-
-    const hasSelectedSection = getSelectedPdfSectionCount() > 0;
-
-    exportButton.disabled = !hasSelectedSection;
-    exportButton.setAttribute(
-        'aria-disabled',
-        String(!hasSelectedSection)
-    );
-}
-
 function bindPdfOptions() {
     document
         .querySelectorAll('.mm-option input[data-option]')
         .forEach(input => {
-            input.addEventListener('change', () => {
-                syncPdfOptionsFromModal();
-                updatePdfExportAvailability();
-            });
+            input.addEventListener('change', syncPdfOptionsFromModal);
+            input.addEventListener('change', updatePdfExportButtonState);
         });
 
-    updatePdfExportAvailability();
+    updatePdfExportButtonState();
 }
 
 function resetPdfBuilderOptions() {
     pdfBuilderOptions = {
         ...PDF_BUILDER_DEFAULT
     };
+}
+
+function updatePdfExportButtonState() {
+    const checkboxes = Array.from(
+        document.querySelectorAll('.mm-option input[data-option]')
+    );
+
+    const exportButton = document.querySelector('.mm-modal-button-primary');
+
+    if (!exportButton || checkboxes.length === 0) {
+        return;
+    }
+
+    exportButton.disabled = !checkboxes.some(input => input.checked);
 }
 
 function setPdfExportPending(isPending) {
@@ -495,12 +479,6 @@ function showPdfBuilder() {
                     // Read the live checkbox state immediately before generation.
                     // This makes the modal UI the source of truth for this export.
                     syncPdfOptionsFromModal();
-
-                    if (getSelectedPdfSectionCount() === 0) {
-                        updatePdfExportAvailability();
-                        return;
-                    }
-
                     setPdfExportPending(true);
 
                     try {
