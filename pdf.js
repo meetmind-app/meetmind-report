@@ -130,25 +130,16 @@ function getExecutiveSlideEngine() {
 
 function buildEngineOptions() {
     /*
-     * UI checkbox IDs use renderer-facing aliases (stats, summary, metrics, ...).
-     * ExecutiveSlideEngine.normalizeVisibility() intentionally reads the
-     * visibility object and maps those aliases to canonical Composition IDs.
+     * Block IDs intentionally match block-registry.js:
+     * header, stats, summary, decisions, tasks, risks,
+     * insights, owners, architecture, metrics, footer.
      *
-     * Keep the flat values as compatibility aliases, but visibility is the
-     * authoritative contract for Composition.
+     * The engine receives only the current UI state.
+     * It remains responsible for resolving enabled blocks,
+     * creating the layout and rendering the PDF.
      */
-    const visibility = Object.fromEntries(
-        PDF_SELECTABLE_OPTIONS.map(key => [
-            key,
-            pdfBuilderOptions[key] !== false
-        ])
-    );
-
     return {
-        ...pdfBuilderOptions,
-        header: true,
-        footer: true,
-        visibility
+        ...pdfBuilderOptions
     };
 }
 
@@ -231,8 +222,7 @@ async function generateExecutivePdf() {
 
     console.log('PDF Engine v2 input', {
         report,
-        options,
-        visibility: options.visibility
+        options
     });
 
     const result = await engine.generate(
@@ -354,12 +344,45 @@ function syncPdfOptionsFromModal() {
     pdfBuilderOptions.footer = true;
 }
 
+function getSelectedPdfSectionCount() {
+    return Array
+        .from(document.querySelectorAll('.mm-option input[data-option]'))
+        .filter(input => input.checked)
+        .length;
+}
+
+function updatePdfExportAvailability() {
+    const exportButton =
+        document.querySelector(
+            '[data-action="export"], ' +
+            '#export, ' +
+            '.mm-modal-button-primary'
+        );
+
+    if (!exportButton) {
+        return;
+    }
+
+    const hasSelectedSection = getSelectedPdfSectionCount() > 0;
+
+    exportButton.disabled = !hasSelectedSection;
+    exportButton.setAttribute(
+        'aria-disabled',
+        String(!hasSelectedSection)
+    );
+}
+
 function bindPdfOptions() {
     document
         .querySelectorAll('.mm-option input[data-option]')
         .forEach(input => {
-            input.addEventListener('change', syncPdfOptionsFromModal);
+            input.addEventListener('change', () => {
+                syncPdfOptionsFromModal();
+                updatePdfExportAvailability();
+            });
         });
+
+    updatePdfExportAvailability();
 }
 
 function resetPdfBuilderOptions() {
@@ -472,6 +495,12 @@ function showPdfBuilder() {
                     // Read the live checkbox state immediately before generation.
                     // This makes the modal UI the source of truth for this export.
                     syncPdfOptionsFromModal();
+
+                    if (getSelectedPdfSectionCount() === 0) {
+                        updatePdfExportAvailability();
+                        return;
+                    }
+
                     setPdfExportPending(true);
 
                     try {
