@@ -25,7 +25,45 @@
       <img src="logo.png" alt="MeetMind AI" class="brand-mark-logo">
       <h1 id="errorTitle">Report not available</h1>
       <p id="errorText">Report not found or no longer available.</p>
-     <a class="state-link" href="https://t.me/meetmind_app_bot" target="_blank"> Open MeetMind AI Bot </a>
+      <a class="state-link" href="https://t.me/meetmind_app_bot" target="_blank" rel="noopener">Open MeetMind AI Bot</a>
+    </section>
+
+    <section id="deletedState" class="deleted-state hidden" aria-live="polite">
+      <div class="deleted-brand">
+        <a href="https://t.me/meetmind_app_bot" target="_blank" rel="noopener" class="deleted-brand-link">
+          <img src="logo.png" alt="MeetMind AI" class="deleted-brand-logo">
+          <span>MeetMind AI</span>
+        </a>
+      </div>
+
+      <div class="deleted-hero">
+        <div class="deleted-copy">
+          <div class="deleted-status-badge">MeetMind Report</div>
+          <h1 id="deletedTitle">This report has been deleted</h1>
+          <p id="deletedDescription" class="deleted-description">The owner deleted this report, so its contents are no longer available.</p>
+
+          <div class="deleted-product-copy">
+            <h2 id="deletedProductTitle">Turn your meeting into a ready-to-use executive report</h2>
+            <p id="deletedProductText">MeetMind AI turns a meeting into a clear summary, decisions, tasks, owners, risks and key metrics.</p>
+          </div>
+
+          <a id="deletedCta" class="deleted-cta" href="https://t.me/meetmind_app_bot" target="_blank" rel="noopener">Create a report in MeetMind AI</a>
+          <p id="deletedCtaHint" class="deleted-cta-hint">Upload a meeting recording and get a structured result automatically.</p>
+        </div>
+
+        <figure class="deleted-preview-card">
+          <div class="deleted-preview-frame">
+            <img src="deleted-report-preview.png" alt="MeetMind executive report preview" class="deleted-preview-image">
+          </div>
+          <figcaption id="deletedPreviewLabel">Example of a MeetMind executive report</figcaption>
+        </figure>
+      </div>
+
+      <footer class="deleted-footer">
+        <span>MeetMind AI</span>
+        <span class="deleted-footer-dot">•</span>
+        <a href="https://t.me/meetmind_app_bot" target="_blank" rel="noopener">Open Telegram Bot</a>
+      </footer>
     </section>
 
     <article id="reportPage" class="report hidden">
@@ -54,19 +92,19 @@
       <section id="statsSection" class="stats-card hidden"></section>
 
       <section id="summarySection" class="section summary-section hidden">
-        <h2>Executive Summary</h2>
+        <h2 id="summaryHeading">Executive Summary</h2>
         <div id="summaryContent" class="body-text"></div>
       </section>
 
       <section id="metricsSection" class="section metrics-section hidden">
-        <h2>Key Metrics</h2>
+        <h2 id="metricsHeading">Key Metrics</h2>
         <div id="metricsContent" class="metrics-grid"></div>
       </section>
       
       <section id="insightsDecisionsRisksGrid" class="dynamic-grid hidden"></section>
 
       <section id="tasksSection" class="section tasks-section hidden">
-          <h2>Tasks</h2>
+          <h2 id="tasksHeading">Tasks</h2>
           <div id="tasksContent"></div>
       </section>
 
@@ -74,24 +112,24 @@
         <button id="detailsToggle" class="details-toggle" type="button" aria-expanded="false">
           <div class="details-toggle-left">
             <span id="detailsToggleArrow">▼</span>
-            <span class="details-title">Detailed report</span>
+            <span id="detailsTitle" class="details-title">Detailed report</span>
           </div>
           </button>
 
       <div id="detailsContent" class="details-content hidden">
         <section id="architectureSection" class="section architecture-section hidden">
-           <h2>Architecture &amp; Process</h2>
+           <h2 id="architectureHeading">Architecture &amp; Process</h2>
            <div id="architectureContent" class="body-text structured-text"></div>
         </section>
 
     <section id="ownersSection" class="section owners-section hidden">
-      <h2>Owners</h2>
+      <h2 id="ownersHeading">Owners</h2>
       <div id="ownersContent" class="owners-grid"></div>
     </section>
 
     <section id="transcriptSection" class="section transcript-section hidden">
       <button id="transcriptToggle" class="transcript-toggle" type="button" aria-expanded="false">
-        <span>Meeting Transcript</span>
+        <span id="transcriptHeading">Meeting Transcript</span>
         <span id="transcriptToggleLabel">Show Full Meeting Transcript</span>
       </button>
       <div id="transcriptContent" class="transcript-content hidden"></div>
