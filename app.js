@@ -785,11 +785,13 @@ function renderReport(payload) {
   const report = normalizeReport(meeting.report || {});
   console.log(report);
   
+  // The editable title is persisted inside report JSON by report-save.
+  // Prefer the saved report title over the immutable/original meeting title.
   const title =
-    meeting.meeting_title ||
-    meeting.title ||
     report.meeting_title ||
     report.title ||
+    meeting.meeting_title ||
+    meeting.title ||
     t('meetingReport');
   
   document.title = `${title} — MeetMind AI`;
@@ -1247,7 +1249,14 @@ async function saveReport() {
     if (!response.ok) {
         throw new Error(`Save failed: ${response.status}`);
     }
-    return response.json();
+
+    const result = await response.json();
+    const savedTitle = payload.report.meeting_title || payload.report.title || '';
+    if (currentMeeting && savedTitle) {
+        currentMeeting.title = savedTitle;
+        document.title = `${savedTitle} — MeetMind AI`;
+    }
+    return result;
 }
 
  function applyEditMode() {
