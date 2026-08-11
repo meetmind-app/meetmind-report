@@ -17,8 +17,8 @@
   <main class="page-shell">
     <section id="loadingState" class="state state-loading">
       <img src="logo.png" alt="MeetMind AI" class="brand-mark-logo">
-      <h1>Loading report…</h1>
-      <p>MeetMind AI is preparing your meeting report.</p>
+      <h1 id="loadingTitle">Loading report…</h1>
+      <p id="loadingText">MeetMind AI is preparing your meeting report.</p>
     </section>
 
     <section id="errorState" class="state state-error hidden">
@@ -149,11 +149,21 @@
 
   <div id="deleteModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
     <div class="modal-card">
-      <h2 id="deleteModalTitle">Delete report from database?</h2>
-      <p id="deleteModalText">You will not be able to open it again.</p>
+      <h2 id="deleteModalTitle">Delete this report?</h2>
+      <p id="deleteModalText">The report will no longer be available through this link.</p>
       <div class="modal-actions">
         <button id="cancelDeleteBtn" class="btn btn-secondary" type="button">Cancel</button>
         <button id="confirmDeleteBtn" class="btn btn-danger" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="feedbackModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="feedbackModalTitle">
+    <div class="modal-card">
+      <h2 id="feedbackModalTitle">Something went wrong</h2>
+      <p id="feedbackModalText">Please try again.</p>
+      <div class="modal-actions">
+        <button id="feedbackModalClose" class="btn btn-secondary" type="button">Close</button>
       </div>
     </div>
   </div>
