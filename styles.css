@@ -815,3 +815,191 @@ body.edit-mode .editable-field:focus {
     background: #FFFFFF;
     box-shadow: 0 0 0 3px rgba(37,99,235,.12);
 }
+
+/* =========================================================
+   MeetMind final UI patch — 2026-08-11
+   Deleted state / narrow mobile / tablet actions / highlight grid
+   ========================================================= */
+
+/* Deleted-report state: dedicated layout instead of inheriting raw page flow. */
+.deleted-state {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 12px 0 24px;
+}
+
+.deleted-brand {
+  margin-bottom: 48px;
+}
+
+.deleted-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.deleted-brand-logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  flex: 0 0 46px;
+}
+
+.deleted-hero {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+  align-items: center;
+  gap: 64px;
+}
+
+.deleted-copy { min-width: 0; }
+
+.deleted-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.deleted-copy h1 {
+  margin: 0 0 16px;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1.06;
+  letter-spacing: -.035em;
+}
+
+.deleted-description,
+.deleted-product-copy p,
+.deleted-cta-hint {
+  color: var(--secondary);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.deleted-description { margin: 0 0 36px; }
+.deleted-product-copy { margin-bottom: 24px; }
+.deleted-product-copy h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -.015em;
+}
+.deleted-product-copy p { margin: 0; }
+
+.deleted-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+.deleted-cta-hint { margin: 12px 0 0; font-size: 13px; }
+
+.deleted-preview-card { margin: 0; min-width: 0; }
+.deleted-preview-frame {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.deleted-preview-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.deleted-preview-card figcaption {
+  margin-top: 10px;
+  color: var(--secondary);
+  font-size: 12px;
+  text-align: center;
+}
+.deleted-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 64px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  color: var(--secondary);
+  font-size: 13px;
+}
+.deleted-footer a { color: inherit; }
+
+/* Highlights: deterministic columns. Flex wrapping previously centered
+   the last row and made bullets appear to jump horizontally. */
+.highlight-section .item-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 32px;
+}
+.highlight-section .report-item {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+/* iPad/tablet: all four actions fit on one row. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .actions .btn,
+  #editReportBtn {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .highlight-section .item-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .deleted-hero {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+/* Smartphone: report cards use the entire available viewport width. */
+@media (max-width: 767px) {
+  .page-shell { padding-left: 10px; padding-right: 10px; }
+  .report { width: 100%; max-width: 100%; margin: 0; }
+  .section,
+  .dynamic-grid,
+  .dynamic-card,
+  .stats-card,
+  .details-section {
+    width: 100%;
+    max-width: none;
+  }
+  .summary-section { padding: 20px; }
+  .highlight-section .item-list { grid-template-columns: 1fr; }
+
+  .deleted-state { width: 100%; padding-top: 0; }
+  .deleted-brand { margin-bottom: 32px; }
+  .deleted-hero { grid-template-columns: 1fr; gap: 36px; }
+  .deleted-copy h1 { font-size: 36px; }
+  .deleted-preview-card { width: 100%; }
+  .deleted-footer { margin-top: 40px; flex-wrap: wrap; }
+}
