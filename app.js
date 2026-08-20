@@ -270,7 +270,7 @@ function t(key) {
 const RTL_LANGUAGES = new Set(['ar', 'fa']);
 
 function applyDocumentLanguage() {
-  applyDocumentLanguage();
+  document.documentElement.lang = currentLang;
   document.documentElement.dir = RTL_LANGUAGES.has(currentLang) ? 'rtl' : 'ltr';
 }
 
