@@ -262,8 +262,9 @@ function enrichReportForExecutivePdf(report) {
     // Keep language as a compatibility alias for engine versions that read it from report.
     const rawLanguage =
         meeting.report_language || meeting.language || currentLang || 'en';
-    const language = ['en', 'ru', 'es', 'pt'].includes(String(rawLanguage).toLowerCase())
-        ? String(rawLanguage).toLowerCase()
+    const normalizedLanguage = String(rawLanguage).toLowerCase().split('-')[0];
+    const language = PDF_UI_I18N[normalizedLanguage]
+        ? normalizedLanguage
         : 'en';
     enriched.report_language = language;
     enriched.language = language;
