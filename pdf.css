@@ -239,3 +239,23 @@
 .pdf-theme-s .pdf-column{
     gap:10px;
 }
+
+/* PDF builder modal: RTL UI for Arabic and Persian report pages. */
+html[dir="rtl"] .mm-pdf-builder {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .mm-pdf-options {
+    direction: rtl;
+}
+
+html[dir="rtl"] .mm-option {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .mm-option input {
+    margin-left: 8px;
+    margin-right: 0;
+}
