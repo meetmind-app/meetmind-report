@@ -267,6 +267,13 @@ function t(key) {
   return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
 }
 
+const RTL_LANGUAGES = new Set(['ar', 'fa']);
+
+function applyDocumentLanguage() {
+  applyDocumentLanguage();
+  document.documentElement.dir = RTL_LANGUAGES.has(currentLang) ? 'rtl' : 'ltr';
+}
+
 
 function detectInitialLanguage() {
   // Before the report payload arrives we do not yet know report_language.
@@ -275,7 +282,7 @@ function detectInitialLanguage() {
 }
 
 function setLoadingLabels() {
-  document.documentElement.lang = currentLang;
+  applyDocumentLanguage();
 
   const loadingState = $('loadingState');
   const title = $('loadingTitle') || loadingState?.querySelector('h1');
@@ -491,7 +498,7 @@ function showDeletedState() {
   $('reportPage').classList.add('hidden');
   $('errorState').classList.add('hidden');
 
-  document.documentElement.lang = currentLang;
+  applyDocumentLanguage();
   document.title = `${t('deleted')} — MeetMind AI`;
   $('deletedTitle').textContent = t('deleted');
   $('deletedDescription').textContent = t('deletedDescription');
@@ -504,7 +511,7 @@ function showDeletedState() {
 }
 
 function setLabels() {
-  document.documentElement.lang = currentLang;
+  applyDocumentLanguage();
   $('downloadPdfBtn').textContent = t('downloadPdf');
   $('shareBtn').textContent = t('shareReport');
   $('editReportBtn').textContent = isEditMode ? t('saveChanges') : t('editReport');
