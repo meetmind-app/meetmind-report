@@ -83,6 +83,60 @@ const PDF_UI_I18N = {
         errorTitle: 'Falha ao exportar PDF',
         close: 'Fechar',
         options: { stats: 'Estatísticas da reunião', metrics: 'Métricas principais', summary: 'Resumo executivo', decisions: 'Decisões', tasks: 'Tarefas', risks: 'Riscos', insights: 'Insights', owners: 'Responsáveis', architecture: 'Arquitetura e processo' }
+    },
+    tr: {
+        title: 'PDF dışa aktar',
+        hint: 'PDF’ye dahil edilecek bölümleri seçin',
+        cancel: 'İptal',
+        export: 'PDF oluştur',
+        errorTitle: 'PDF dışa aktarılamadı',
+        close: 'Kapat',
+        options: { stats: 'Toplantı istatistikleri', metrics: 'Temel metrikler', summary: 'Yönetici özeti', decisions: 'Kararlar', tasks: 'Görevler', risks: 'Riskler', insights: 'İçgörüler', owners: 'Sorumlular', architecture: 'Mimari ve süreç' }
+    },
+    id: {
+        title: 'Ekspor PDF',
+        hint: 'Pilih bagian yang akan disertakan dalam PDF',
+        cancel: 'Batal',
+        export: 'Buat PDF',
+        errorTitle: 'Ekspor PDF gagal',
+        close: 'Tutup',
+        options: { stats: 'Statistik rapat', metrics: 'Metrik utama', summary: 'Ringkasan eksekutif', decisions: 'Keputusan', tasks: 'Tugas', risks: 'Risiko', insights: 'Insight', owners: 'Penanggung jawab', architecture: 'Arsitektur & proses' }
+    },
+    hi: {
+        title: 'PDF एक्सपोर्ट करें',
+        hint: 'PDF में शामिल किए जाने वाले सेक्शन चुनें',
+        cancel: 'रद्द करें',
+        export: 'PDF बनाएँ',
+        errorTitle: 'PDF एक्सपोर्ट नहीं हो सका',
+        close: 'बंद करें',
+        options: { stats: 'मीटिंग आँकड़े', metrics: 'मुख्य मेट्रिक्स', summary: 'एग्जीक्यूटिव सारांश', decisions: 'निर्णय', tasks: 'कार्य', risks: 'जोखिम', insights: 'इनसाइट्स', owners: 'जिम्मेदार', architecture: 'आर्किटेक्चर और प्रक्रिया' }
+    },
+    ar: {
+        title: 'تصدير PDF',
+        hint: 'اختر الأقسام التي تريد تضمينها في ملف PDF',
+        cancel: 'إلغاء',
+        export: 'إنشاء PDF',
+        errorTitle: 'تعذر تصدير ملف PDF',
+        close: 'إغلاق',
+        options: { stats: 'إحصاءات الاجتماع', metrics: 'المؤشرات الرئيسية', summary: 'الملخص التنفيذي', decisions: 'القرارات', tasks: 'المهام', risks: 'المخاطر', insights: 'الرؤى', owners: 'المسؤولون', architecture: 'البنية والعملية' }
+    },
+    uz: {
+        title: 'PDF eksport',
+        hint: 'PDF fayliga kiritiladigan bo‘limlarni tanlang',
+        cancel: 'Bekor qilish',
+        export: 'PDF yaratish',
+        errorTitle: 'PDF eksport qilib bo‘lmadi',
+        close: 'Yopish',
+        options: { stats: 'Uchrashuv statistikasi', metrics: 'Asosiy ko‘rsatkichlar', summary: 'Ijrochi xulosa', decisions: 'Qarorlar', tasks: 'Vazifalar', risks: 'Xatarlar', insights: 'Tahlillar', owners: 'Mas’ullar', architecture: 'Arxitektura va jarayon' }
+    },
+    fa: {
+        title: 'خروجی PDF',
+        hint: 'بخش‌هایی را که می‌خواهید در PDF باشند انتخاب کنید',
+        cancel: 'لغو',
+        export: 'ساخت PDF',
+        errorTitle: 'خروجی PDF ناموفق بود',
+        close: 'بستن',
+        options: { stats: 'آمار جلسه', metrics: 'شاخص‌های کلیدی', summary: 'خلاصه مدیریتی', decisions: 'تصمیم‌ها', tasks: 'وظایف', risks: 'ریسک‌ها', insights: 'بینش‌ها', owners: 'مسئولان', architecture: 'معماری و فرایند' }
     }
 };
 
