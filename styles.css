@@ -1072,3 +1072,52 @@ body.edit-mode .editable-field:focus {
     border-radius: 22px;
   }
 }
+
+/* =========================================================
+   RTL layout — Arabic / Persian
+   ========================================================= */
+
+html[dir="rtl"] body {
+  direction: rtl;
+}
+
+html[dir="rtl"] .topbar,
+html[dir="rtl"] .brand,
+html[dir="rtl"] .actions,
+html[dir="rtl"] .meta-row,
+html[dir="rtl"] .stats-card,
+html[dir="rtl"] .details-toggle,
+html[dir="rtl"] .details-toggle-left,
+html[dir="rtl"] .modal-actions,
+html[dir="rtl"] .deleted-footer {
+  direction: rtl;
+}
+
+html[dir="rtl"] .meeting-title,
+html[dir="rtl"] .body-text,
+html[dir="rtl"] .report-item,
+html[dir="rtl"] .metric-card,
+html[dir="rtl"] .task-table,
+html[dir="rtl"] .task-card,
+html[dir="rtl"] .architecture-card,
+html[dir="rtl"] .owner-card,
+html[dir="rtl"] .transcript-content {
+  unicode-bidi: plaintext;
+}
+
+html[dir="rtl"] .section,
+html[dir="rtl"] .dynamic-card,
+html[dir="rtl"] .details-section,
+html[dir="rtl"] .modal-card {
+  text-align: right;
+}
+
+html[dir="rtl"] .modal-actions {
+  justify-content: flex-start;
+}
+
+@media (max-width: 1023px) {
+  html[dir="rtl"] .actions {
+    justify-content: flex-start;
+  }
+}
