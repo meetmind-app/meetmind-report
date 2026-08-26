@@ -60,6 +60,7 @@ function getAnalyticsBaseProperties() {
   };
 }
 
+
 async function trackAnalyticsEvent(eventName, properties = {}, overrides = {}) {
   if (!eventName) return false;
 
