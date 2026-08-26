@@ -63,6 +63,11 @@ function getAnalyticsBaseProperties() {
 async function trackAnalyticsEvent(eventName, properties = {}, overrides = {}) {
   if (!eventName) return false;
 
+  // Web Report is accessed through its share token.
+  // The token is sent only for server-side authorization
+  // and must never be stored in analytics_events.
+  const shareToken = new URLSearchParams(window.location.search).get('token');
+
   const payload = {
     telegram_id: null,
     anonymous_id: analyticsAnonymousId,
@@ -73,7 +78,15 @@ async function trackAnalyticsEvent(eventName, properties = {}, overrides = {}) {
     source: ANALYTICS_SOURCE,
     campaign: getAnalyticsCampaign(),
     upload_session_id: null,
-    properties: { ...getAnalyticsBaseProperties(), ...properties },
+
+    // Credential for Web Report analytics authorization.
+    share_token: shareToken || null,
+
+    properties: {
+      ...getAnalyticsBaseProperties(),
+      ...properties
+    },
+
     ...overrides
   };
 
@@ -88,13 +101,20 @@ async function trackAnalyticsEvent(eventName, properties = {}, overrides = {}) {
       body: JSON.stringify(payload),
       keepalive: true
     });
+
     if (!response.ok) {
-      console.warn(`Analytics event ${eventName} failed: HTTP ${response.status}`);
+      console.warn(
+        `Analytics event ${eventName} failed: HTTP ${response.status}`
+      );
       return false;
     }
+
     return true;
   } catch (error) {
-    console.warn(`Analytics event ${eventName} failed`, error);
+    console.warn(
+      `Analytics event ${eventName} failed`,
+      error
+    );
     return false;
   }
 }
