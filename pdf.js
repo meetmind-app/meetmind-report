@@ -47,6 +47,20 @@ const PDF_SELECTABLE_OPTIONS = [
     'architecture'
 ];
 
+function trackPdfAnalytics(eventName, properties = {}) {
+    try {
+        if (window.MeetMindAnalytics && typeof window.MeetMindAnalytics.track === 'function') {
+            window.MeetMindAnalytics.track(eventName, properties);
+        }
+    } catch (error) {
+        console.warn(`PDF analytics event ${eventName} failed`, error);
+    }
+}
+
+function getSelectedPdfSections() {
+    return PDF_SELECTABLE_OPTIONS.filter(key => pdfBuilderOptions[key] !== false);
+}
+
 const PDF_UI_I18N = {
     en: {
         title: 'Export PDF',
@@ -273,44 +287,59 @@ function enrichReportForExecutivePdf(report) {
 }
 
 async function generateExecutivePdf() {
-   // 6H.1: preserve source metadata (date) and Summary paragraph breaks
-   // before the report enters Composition/Layout/Renderer.
-   const report = enrichReportForExecutivePdf(buildReportJson());
-   const engine = getExecutiveSlideEngine();
-   const fontBytes = await loadPdfFont();
-   const language = report.report_language || report.language || currentLang || 'en';
-   const options = {
-    ...buildEngineOptions(),
-    fontBytes,
-    // Pass both names intentionally: current engine can consume language,
-    // while report_language mirrors the DB contract and keeps the boundary explicit.
-    language,
-    report_language: language
-};
+    const selectedSections = getSelectedPdfSections();
 
-    console.log('PDF Engine v2 input', {
-        report,
-        options,
-        visibility: options.visibility
+    trackPdfAnalytics('pdf_generation_started', {
+        selected_sections: selectedSections,
+        selected_sections_count: selectedSections.length
     });
 
-    const result = await engine.generate(
-        report,
-        options
-    );
+    try {
+        const report = enrichReportForExecutivePdf(buildReportJson());
+        const engine = getExecutiveSlideEngine();
+        const fontBytes = await loadPdfFont();
+        const language = report.report_language || report.language || currentLang || 'en';
+        const options = {
+            ...buildEngineOptions(),
+            fontBytes,
+            language,
+            report_language: language
+        };
 
-    const blob = normalizePdfResult(result);
-    const filename =
-        sanitizePdfFilename(getPdfTitle()) +
-        PDF_CONFIG.fileSuffix;
+        console.log('PDF Engine v2 input', {
+            report,
+            options,
+            visibility: options.visibility
+        });
 
-    const delivery = await deliverPdfBlob(blob, filename);
+        const result = await engine.generate(report, options);
+        const blob = normalizePdfResult(result);
+        const filename = sanitizePdfFilename(getPdfTitle()) + PDF_CONFIG.fileSuffix;
+        const delivery = await deliverPdfBlob(blob, filename);
 
-    console.log('PDF Engine v2 export complete', {
-        filename,
-        size: blob.size,
-        delivery
-    });
+        console.log('PDF Engine v2 export complete', {
+            filename,
+            size: blob.size,
+            delivery
+        });
+
+        trackPdfAnalytics('pdf_generation_completed', {
+            selected_sections: selectedSections,
+            selected_sections_count: selectedSections.length,
+            file_size_bytes: blob.size,
+            delivery
+        });
+
+        return { size: blob.size, delivery };
+    } catch (error) {
+        trackPdfAnalytics('pdf_generation_failed', {
+            selected_sections: selectedSections,
+            selected_sections_count: selectedSections.length,
+            error_name: error?.name || 'Error',
+            error_message: String(error?.message || error || '').slice(0, 240)
+        });
+        throw error;
+    }
 }
 
 function normalizePdfResult(result) {
