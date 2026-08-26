@@ -1,4 +1,6 @@
-const API_BASE = 'https://vaddfiksldaebnzaccks.supabase.co/functions/v1';
+const SUPABASE_URL = 'https://vaddfiksldaebnzaccks.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_IS_IDGRqz9igQxh3_T1OzQ_ZnRkolZU';
+const API_BASE = `${SUPABASE_URL}/functions/v1`;
 const REPORT_ENDPOINT = `${API_BASE}/report`;
 const DELETE_ENDPOINT = `${API_BASE}/report-delete`;
 const SAVE_ENDPOINT = `${API_BASE}/report-save`;
@@ -78,7 +80,11 @@ async function trackAnalyticsEvent(eventName, properties = {}, overrides = {}) {
   try {
     const response = await fetch(ANALYTICS_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
       body: JSON.stringify(payload),
       keepalive: true
     });
@@ -992,7 +998,6 @@ async function loadReport() {
 
   try {
     const payload = await loadReportPayload();
-
     if (!payload.success || !payload.meeting) {
       const errorLang = String(payload.language || 'en').toLowerCase();
       currentLang = SUPPORTED_LANGUAGES.includes(errorLang) ? errorLang : 'en';
