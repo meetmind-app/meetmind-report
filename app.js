@@ -2,6 +2,102 @@ const API_BASE = 'https://vaddfiksldaebnzaccks.supabase.co/functions/v1';
 const REPORT_ENDPOINT = `${API_BASE}/report`;
 const DELETE_ENDPOINT = `${API_BASE}/report-delete`;
 const SAVE_ENDPOINT = `${API_BASE}/report-save`;
+const ANALYTICS_ENDPOINT = `${API_BASE}/analytics`;
+
+/* MeetMind Web Report analytics v1.0.0 */
+const ANALYTICS_SOURCE = 'web_report';
+const ANALYTICS_VERSION = '1.0.0';
+
+function createAnalyticsId(prefix) {
+  const uuid = typeof crypto?.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `${prefix}_${uuid}`;
+}
+
+function getOrCreateStorageId(storage, key, prefix) {
+  try {
+    const existing = storage.getItem(key);
+    if (existing) return existing;
+    const created = createAnalyticsId(prefix);
+    storage.setItem(key, created);
+    return created;
+  } catch (error) {
+    return createAnalyticsId(prefix);
+  }
+}
+
+const analyticsAnonymousId = getOrCreateStorageId(window.localStorage, 'meetmind_analytics_anonymous_id', 'web');
+const analyticsSessionId = getOrCreateStorageId(window.sessionStorage, 'meetmind_analytics_session_id', 'session');
+
+function getAnalyticsMeetingId() {
+  return currentMeeting?.id || currentMeeting?.meeting_id || currentMeeting?.meeting_uuid || null;
+}
+
+function getAnalyticsCampaign() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('utm_campaign') || params.get('campaign') || null;
+}
+
+function getSafeReferrerOrigin() {
+  if (!document.referrer) return null;
+  try { return new URL(document.referrer).origin; } catch (error) { return null; }
+}
+
+function getAnalyticsBaseProperties() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    client_timestamp: new Date().toISOString(),
+    analytics_service: 'meetmind-analytics',
+    analytics_version: ANALYTICS_VERSION,
+    session_id: analyticsSessionId,
+    page_path: window.location.pathname,
+    referrer_origin: getSafeReferrerOrigin(),
+    utm_source: params.get('utm_source') || null,
+    utm_medium: params.get('utm_medium') || null
+  };
+}
+
+async function trackAnalyticsEvent(eventName, properties = {}, overrides = {}) {
+  if (!eventName) return false;
+
+  const payload = {
+    telegram_id: null,
+    anonymous_id: analyticsAnonymousId,
+    event_name: eventName,
+    meeting_id: getAnalyticsMeetingId(),
+    plan_code: null,
+    language: currentLang || 'en',
+    source: ANALYTICS_SOURCE,
+    campaign: getAnalyticsCampaign(),
+    upload_session_id: null,
+    properties: { ...getAnalyticsBaseProperties(), ...properties },
+    ...overrides
+  };
+
+  try {
+    const response = await fetch(ANALYTICS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    });
+    if (!response.ok) {
+      console.warn(`Analytics event ${eventName} failed: HTTP ${response.status}`);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn(`Analytics event ${eventName} failed`, error);
+    return false;
+  }
+}
+
+window.MeetMindAnalytics = {
+  track: trackAnalyticsEvent,
+  getAnonymousId: () => analyticsAnonymousId,
+  getSessionId: () => analyticsSessionId
+};
 
 const i18n = {
   en: {
@@ -889,6 +985,7 @@ async function loadReport() {
   currentToken = params.get('token');
 
   if (!currentToken) {
+    trackAnalyticsEvent('report_load_failed', { reason: 'missing_token' });
     showError(i18n.en.missingToken);
     return;
   }
@@ -900,22 +997,40 @@ async function loadReport() {
       const errorLang = String(payload.language || 'en').toLowerCase();
       currentLang = SUPPORTED_LANGUAGES.includes(errorLang) ? errorLang : 'en';
       setLoadingLabels();
+      trackAnalyticsEvent('report_load_failed', { reason: 'report_not_found' });
       showError(t('notFound'));
       return;
     }
 
     renderReport(payload);
+
+    if (payload.meeting.status === 'deleted' || payload.meeting.deleted_at) {
+      trackAnalyticsEvent('deleted_report_opened', {
+        report_status: payload.meeting.status || 'deleted'
+      });
+      return;
+    }
+
+    trackAnalyticsEvent('report_opened', {
+      has_transcript: !!payload.meeting.transcript?.trim(),
+      branding_visible: payload.meeting.branding_visible !== false
+    });
   } catch (error) {
     console.error(error);
+    trackAnalyticsEvent('report_load_failed', {
+      reason: 'request_failed',
+      error_name: error?.name || 'Error',
+      error_message: String(error?.message || error || '').slice(0, 240)
+    });
     showError(i18n.en.notFound);
   }
 }
 
 function bindActions() {
-  $('downloadPdfBtn').addEventListener(
-    'click',
-    showPdfBuilder
-);
+  $('downloadPdfBtn').addEventListener('click', () => {
+    trackAnalyticsEvent('pdf_export_opened');
+    showPdfBuilder();
+  });
 
   $('shareBtn').addEventListener('click', async () => {
     const url = window.location.href;
@@ -924,25 +1039,40 @@ function bindActions() {
     if (navigator.share) {
       try {
         await navigator.share({ title, url });
+        trackAnalyticsEvent('report_shared', { method: 'native_share' });
         return;
       } catch (error) {
-        if (error.name === 'AbortError') return;
+        if (error.name === 'AbortError') {
+          trackAnalyticsEvent('report_share_cancelled', { method: 'native_share' });
+          return;
+        }
       }
     }
-    
-    await navigator.clipboard.writeText(url);
-    showToast(t('copied'));
+
+    try {
+      await navigator.clipboard.writeText(url);
+      trackAnalyticsEvent('report_shared', { method: 'clipboard' });
+      showToast(t('copied'));
+    } catch (error) {
+      trackAnalyticsEvent('report_share_failed', {
+        method: 'clipboard',
+        error_name: error?.name || 'Error',
+        error_message: String(error?.message || error || '').slice(0, 240)
+      });
+      console.error(error);
+    }
   });
-  
+
   $('editReportBtn').addEventListener('click', toggleEditMode);
   $('deleteBtn').addEventListener('click', () => {
     if (isEditMode) {
-        location.reload();
-        return;
+      location.reload();
+      return;
     }
+    trackAnalyticsEvent('report_delete_requested');
     $('deleteModal').classList.remove('hidden');
+  });
 
-});
   $('cancelDeleteBtn').addEventListener('click', () => $('deleteModal').classList.add('hidden'));
   $('feedbackModalClose').addEventListener('click', hideFeedbackModal);
   $('feedbackModal').addEventListener('click', (event) => {
@@ -961,31 +1091,41 @@ function bindActions() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
       if (!result.success) throw new Error(result.error || 'Delete failed');
+
+      trackAnalyticsEvent('report_deleted');
       $('deleteModal').classList.add('hidden');
       showToast(t('deleteDone'));
       if (currentMeeting) currentMeeting.deleted_at = new Date().toISOString();
       setTimeout(showDeletedState, 350);
     } catch (error) {
       console.error(error);
+      trackAnalyticsEvent('report_delete_failed', {
+        error_name: error?.name || 'Error',
+        error_message: String(error?.message || error || '').slice(0, 240)
+      });
       showFeedbackModal(t('deleteErrorTitle'), t('errorTryAgain'));
     }
   });
 
-$('detailsToggle').addEventListener('click', () => {
-  const content = $('detailsContent');
-  const expanded = !content.classList.contains('hidden');
+  $('detailsToggle').addEventListener('click', () => {
+    const content = $('detailsContent');
+    const expanded = !content.classList.contains('hidden');
 
-  content.classList.toggle('hidden', expanded);
-  $('detailsToggle').setAttribute('aria-expanded', String(!expanded));
-  $('detailsToggleArrow').textContent = expanded ? '▼' : '▲';
-});
-  
+    content.classList.toggle('hidden', expanded);
+    $('detailsToggle').setAttribute('aria-expanded', String(!expanded));
+    $('detailsToggleArrow').textContent = expanded ? '▼' : '▲';
+
+    if (!expanded) trackAnalyticsEvent('details_opened');
+  });
+
   $('transcriptToggle').addEventListener('click', () => {
     const content = $('transcriptContent');
     const expanded = !content.classList.contains('hidden');
     content.classList.toggle('hidden', expanded);
     $('transcriptToggle').setAttribute('aria-expanded', String(!expanded));
     $('transcriptToggleLabel').textContent = expanded ? t('showTranscript') : t('hideTranscript');
+
+    if (!expanded) trackAnalyticsEvent('transcript_opened');
   });
 }
 
@@ -994,13 +1134,22 @@ function toggleEditMode() {
 
     isEditMode = !isEditMode;
 
+    if (isEditMode) {
+        trackAnalyticsEvent('report_edit_started');
+    }
+
     if (!isEditMode) {
         saveReport()
             .then(() => {
                 console.log('Report saved successfully');
+                trackAnalyticsEvent('report_edit_saved');
             })
             .catch(err => {
                 console.error('Save error:', err);
+                trackAnalyticsEvent('report_edit_save_failed', {
+                    error_name: err?.name || 'Error',
+                    error_message: String(err?.message || err || '').slice(0, 240)
+                });
                 showFeedbackModal(t('saveErrorTitle'), t('errorTryAgain'));
             });
     }
