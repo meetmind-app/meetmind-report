@@ -1,2 +1,2 @@
 # meetmind-report
-MeetMind AI Report Viewer
+LOREVI Report Viewer

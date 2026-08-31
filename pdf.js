@@ -1,5 +1,5 @@
 /*
- * MeetMind AI
+ * LOREVI
  * Executive PDF Generator v2
  *
  * Entry point for the Executive Slide Engine.
@@ -18,7 +18,7 @@
 'use strict';
 
 const PDF_CONFIG = {
-    fileSuffix: ' - MeetMind AI.pdf'
+    fileSuffix: ' - LOREVI.pdf'
 };
 
 const PDF_BUILDER_DEFAULT = {
@@ -49,8 +49,8 @@ const PDF_SELECTABLE_OPTIONS = [
 
 function trackPdfAnalytics(eventName, properties = {}) {
     try {
-        if (window.MeetMindAnalytics && typeof window.MeetMindAnalytics.track === 'function') {
-            window.MeetMindAnalytics.track(eventName, properties);
+        if (window.LOREVIAnalytics && typeof window.LOREVIAnalytics.track === 'function') {
+            window.LOREVIAnalytics.track(eventName, properties);
         }
     } catch (error) {
         console.warn(`PDF analytics event ${eventName} failed`, error);

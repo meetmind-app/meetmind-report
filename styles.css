@@ -817,7 +817,7 @@ body.edit-mode .editable-field:focus {
 }
 
 /* =========================================================
-   MeetMind final UI patch — 2026-08-11
+   LOREVI final UI patch — 2026-08-11
    Deleted state / narrow mobile / tablet actions / highlight grid
    ========================================================= */
 
@@ -1005,7 +1005,7 @@ body.edit-mode .editable-field:focus {
 }
 
 /* =========================================================
-   MeetMind UI micro-fix — 2026-08-11
+   LOREVI UI micro-fix — 2026-08-11
    1) true full-width report on narrow smartphones
    2) restore subtle purple deleted-state surface
    ========================================================= */
