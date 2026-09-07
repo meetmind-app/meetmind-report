@@ -107,11 +107,13 @@ const payload = {
   assert.ok(bodyText.includes('8,4M → 10M'), 'Rich metric value is not visible.');
   assert.ok(bodyText.includes('Влияние: Рост комиссии и снижение маржи'), 'Risk impact is not visible.');
   assert.ok(bodyText.includes('Меры: Проверить альтернативных провайдеров до масштабирования'), 'Risk mitigation is not visible.');
-  assert.ok(bodyText.includes('Принять решение по запуску'), 'Owner responsibility is not visible.');
   assert.ok(!bodyText.includes('current_to_target'), 'Machine metric relation leaked into localized UI.');
 
   await page.locator('#detailsToggle').click();
   await page.waitForFunction(() => !document.getElementById('detailsContent').classList.contains('hidden'));
+
+  const detailsText = await page.locator('#detailsContent').innerText();
+  assert.ok(detailsText.includes('Принять решение по запуску'), 'Owner responsibility is not visible after Details is expanded.');
 
   const architectureText = await page.locator('#architectureContent').innerText();
   assert.ok(architectureText.includes('→'), 'Explicit process connector is missing.');
