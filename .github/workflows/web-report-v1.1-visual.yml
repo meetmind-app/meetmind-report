@@ -12,6 +12,7 @@ on:
       - 'report-v1.1*.css'
       - 'Tests/web-report-v1.1-visual.js'
       - 'Tests/web-report-e2e-corpus.js'
+      - 'Tests/web-report-language-matrix.js'
       - 'Tests/fixtures/**'
       - '.github/workflows/web-report-v1.1-visual.yml'
 
@@ -44,6 +45,9 @@ jobs:
 
       - name: Run shared E2E contract corpus
         run: node Tests/web-report-e2e-corpus.js
+
+      - name: Run ten-language browser matrix
+        run: node Tests/web-report-language-matrix.js
 
       - name: Upload screenshot
         if: always()
