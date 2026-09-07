@@ -12,6 +12,7 @@ on:
       - 'styles.css'
       - 'report-v1.1*.js'
       - 'report-v1.1*.css'
+      - 'Supabase/**'
       - 'Tests/**'
       - '.github/workflows/web-report-v1.1.yml'
 
@@ -29,3 +30,6 @@ jobs:
 
       - name: Run Web Report v1.1 regression
         run: node Tests/web-report-v1.1.test.js
+
+      - name: Run report Edge Function compatibility regression
+        run: node Tests/report-edge-v1.1.test.mjs
