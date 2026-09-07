@@ -11,6 +11,8 @@ on:
       - 'report-v1.1*.js'
       - 'report-v1.1*.css'
       - 'Tests/web-report-v1.1-visual.js'
+      - 'Tests/web-report-e2e-corpus.js'
+      - 'Tests/fixtures/**'
       - '.github/workflows/web-report-v1.1-visual.yml'
 
 jobs:
@@ -37,8 +39,11 @@ jobs:
           echo $! > /tmp/lorevi-web.pid
           sleep 2
 
-      - name: Run browser regression
+      - name: Run browser visual regression
         run: node Tests/web-report-v1.1-visual.js
+
+      - name: Run shared E2E contract corpus
+        run: node Tests/web-report-e2e-corpus.js
 
       - name: Upload screenshot
         if: always()
