@@ -17,16 +17,16 @@ const languages = [
 ];
 
 function payloadFor(language, index) {
+  // Mirrors the production report Edge Function shape: language lives on meeting.
   return {
     success: true,
-    language,
     meeting: {
       id: `lang-${index}`,
+      title: `Language matrix ${index}`,
+      language,
       status: 'processed',
       created_at: '2026-09-07T10:00:00Z',
-      duration_seconds: 600,
-      report_language: language,
-      branding_visible: true,
+      deleted_at: null,
       transcript: 'Language matrix transcript.',
       report: {
         schema_version: '1.1',
@@ -83,7 +83,7 @@ async function renderLanguage(browser, spec, index) {
   await page.goto(`http://127.0.0.1:4173/index.html?token=lang-${index}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => !document.getElementById('reportPage').classList.contains('hidden'));
 
-  let body = await page.locator('body').innerText();
+  const body = await page.locator('body').innerText();
   assert.ok(body.includes(`${spec.impact}: ImpactValue${index}`), `${spec.input}: localized impact label missing.`);
   assert.ok(body.includes(`${spec.mitigation}: MitigationValue${index}`), `${spec.input}: localized mitigation label missing.`);
   assert.ok(!body.includes('current_to_target'), `${spec.input}: machine metric relation leaked.`);
