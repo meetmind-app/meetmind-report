@@ -1,0 +1,16 @@
+name: Web Duration Regression
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  duration-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tests/duration-v1.1.contract.test.js
