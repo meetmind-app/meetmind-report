@@ -1,0 +1,126 @@
+/* LOREVI Web Report v1.1 — additive semantic presentation layer */
+
+.meeting-type-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border: 1px solid rgba(91, 45, 213, 0.16);
+  border-radius: 999px;
+  background: rgba(91, 45, 213, 0.07);
+  color: #5b2dd5;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.metric-card-v11 {
+  position: relative;
+}
+
+.metric-context {
+  margin-top: 6px;
+  color: var(--text-secondary, #626a80);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.metric-relation {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 7px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(91, 45, 213, 0.07);
+  color: #5b2dd5;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.risk-supplement {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(11, 16, 45, 0.08);
+  color: var(--text-secondary, #626a80);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.risk-supplement + .risk-supplement {
+  margin-top: 5px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.risk-supplement strong {
+  color: var(--text-primary, #0b102d);
+  font-weight: 600;
+}
+
+.architecture-v11-section {
+  min-width: 0;
+}
+
+.architecture-components {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.architecture-process {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+}
+
+.architecture-process .architecture-item {
+  flex: 1 1 0;
+  min-width: 155px;
+}
+
+.architecture-flow-arrow {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: #8b91a5;
+  font-size: 18px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.architecture-item-type {
+  display: inline-flex;
+  margin-top: 7px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #f7f8fb;
+  color: #626a80;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+@media (max-width: 767px) {
+  .architecture-process {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .architecture-process .architecture-item {
+    min-width: 0;
+  }
+
+  .architecture-flow-arrow {
+    min-height: 18px;
+    transform: rotate(90deg);
+  }
+
+  html[dir="rtl"] .architecture-flow-arrow {
+    transform: rotate(-90deg);
+  }
+}
