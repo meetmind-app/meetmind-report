@@ -1,80 +1,24 @@
-/* LOREVI Web Report v1.1 presentation refinements.
- * Machine enums (metric relation, architecture item type) stay in report_json
- * and are not exposed as untranslated user-facing labels.
- */
+/* LOREVI Web Report v1.1 presentation refinements + Edit v2 controls. */
 (function installV11Presentation(global) {
-  'use strict';
-
-  function text(value) {
-    return String(value ?? '').trim();
-  }
-
-  function language() {
-    const raw = String(typeof currentLang !== 'undefined' ? currentLang : 'en')
-      .toLowerCase().replace(/_/g, '-');
-    const base = raw.split('-')[0];
-    return base === 'in' ? 'id' : base;
-  }
-
-  renderMetrics = function renderMetricsV11Localized(report) {
-    const metrics = report.key_metrics || report.metrics || [];
-    if (!Array.isArray(metrics) || !metrics.length) return;
-
-    const grid = $('metricsContent');
-    let cols = metrics.length;
-    if (metrics.length === 5) cols = 3;
-    else if (metrics.length >= 7) cols = 4;
-    grid.style.setProperty('--metric-cols', cols);
-
-    grid.innerHTML = metrics.map((metric, index) => {
-      const context = global.LOREVIReportV11?.metricContext?.(metric) || '';
-      const value = global.LOREVIReportV11?.metricDisplayValue?.(metric) || text(metric?.value);
-      return `
-        <div class="metric-card metric-card-v11" data-metric-index="${index}">
-          <div class="metric-label" data-editable="true">${escapeHtml(metric?.label || '')}</div>
-          <div class="metric-value" data-editable="true">${escapeHtml(value)}</div>
-          ${context ? `<div class="metric-context" data-editable="true">${escapeHtml(context)}</div>` : ''}
-        </div>`;
-    }).join('');
-
-    $('metricsSection').classList.remove('hidden');
-  };
-
-  renderArchitecture = function renderArchitectureV11Localized(architecture) {
-    const root = Array.isArray(architecture)
-      ? { sections: architecture }
-      : architecture && typeof architecture === 'object'
-        ? { ...architecture, sections: Array.isArray(architecture.sections) ? architecture.sections : [] }
-        : { sections: [] };
-
-    if (!root.sections.length) return '';
-    const rtl = ['ar', 'fa'].includes(language());
-    const arrow = rtl ? '←' : '→';
-
-    return root.sections.map((section, sectionIndex) => {
-      const items = Array.isArray(section?.items) ? section.items : [];
-      if (!items.length) return '';
-
-      const rawLayout = text(section?.layout || section?.mode || root?.layout || root?.mode).toLowerCase();
-      const layout = ['process', 'flow', 'pipeline', 'sequence', 'workflow'].includes(rawLayout)
-        ? 'process'
-        : 'components';
-
-      const itemHtml = items.map((item, itemIndex) => {
-        const body = `
-          <div class="architecture-item" data-item-index="${itemIndex}">
-            <h4 data-editable="true">${escapeHtml(item?.title || item?.name || '')}</h4>
-            ${text(item?.description || item?.text) ? `<p data-editable="true">${escapeHtml(item?.description || item?.text || '')}</p>` : ''}
-          </div>`;
-        if (layout !== 'process' || itemIndex === items.length - 1) return body;
-        return `${body}<span class="architecture-flow-arrow" aria-hidden="true">${arrow}</span>`;
-      }).join('');
-
-      return `
-        <div class="architecture-section architecture-v11-section" data-section-index="${sectionIndex}" data-layout="${layout}">
-          <h3 class="architecture-section-title" data-editable="true">${escapeHtml(section?.title || '')}</h3>
-          <div class="architecture-${layout}">${itemHtml}</div>
-        </div>`;
-    }).join('');
-  };
+'use strict';
+function text(value){return String(value??'').trim();}
+function language(){const raw=String(typeof currentLang!=='undefined'?currentLang:'en').toLowerCase().replace(/_/g,'-');const base=raw.split('-')[0];return base==='in'?'id':base;}
+renderMetrics=function(report){const metrics=report.key_metrics||report.metrics||[];if(!Array.isArray(metrics)||!metrics.length)return;const grid=$('metricsContent');let cols=metrics.length;if(metrics.length===5)cols=3;else if(metrics.length>=7)cols=4;grid.style.setProperty('--metric-cols',cols);grid.innerHTML=metrics.map((metric,index)=>{const context=global.LOREVIReportV11?.metricContext?.(metric)||'';const value=global.LOREVIReportV11?.metricDisplayValue?.(metric)||text(metric?.value);return `<div class="metric-card metric-card-v11" data-metric-index="${index}"><div class="metric-label" data-editable="true">${escapeHtml(metric?.label||'')}</div><div class="metric-value" data-editable="true">${escapeHtml(value)}</div>${context?`<div class="metric-context" data-editable="true">${escapeHtml(context)}</div>`:''}</div>`;}).join('');$('metricsSection').classList.remove('hidden');};
+renderArchitecture=function(architecture){const root=Array.isArray(architecture)?{sections:architecture}:architecture&&typeof architecture==='object'?{...architecture,sections:Array.isArray(architecture.sections)?architecture.sections:[]}:{sections:[]};if(!root.sections.length)return'';const rtl=['ar','fa'].includes(language());const arrow=rtl?'←':'→';return root.sections.map((section,sectionIndex)=>{const items=Array.isArray(section?.items)?section.items:[];if(!items.length)return'';const raw=text(section?.layout||section?.mode||root?.layout||root?.mode).toLowerCase();const layout=['process','flow','pipeline','sequence','workflow'].includes(raw)?'process':'components';const itemHtml=items.map((item,itemIndex)=>{const body=`<div class="architecture-item" data-item-index="${itemIndex}"><h4 data-editable="true">${escapeHtml(item?.title||item?.name||'')}</h4>${text(item?.description||item?.text)?`<p data-editable="true">${escapeHtml(item?.description||item?.text||'')}</p>`:''}</div>`;return layout!=='process'||itemIndex===items.length-1?body:`${body}<span class="architecture-flow-arrow" aria-hidden="true">${arrow}</span>`;}).join('');return `<div class="architecture-section architecture-v11-section" data-section-index="${sectionIndex}" data-layout="${layout}"><h3 class="architecture-section-title" data-editable="true">${escapeHtml(section?.title||'')}</h3><div class="architecture-${layout}">${itemHtml}</div></div>`;}).join('');};
+const css=`.edit-v2-add,.edit-v2-remove{display:none}body.edit-mode .edit-v2-add{display:inline-flex}body.edit-mode .edit-v2-repeatable{position:relative}body.edit-mode .edit-v2-remove{position:absolute;right:6px;top:6px;width:24px;height:24px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#64748b;align-items:center;justify-content:center;cursor:pointer;z-index:5;font-size:16px;line-height:1;opacity:0;transition:opacity .12s}body.edit-mode .edit-v2-repeatable:focus-within>.edit-v2-remove,body.edit-mode .edit-v2-repeatable:hover>.edit-v2-remove{display:inline-flex;opacity:1}body.edit-mode .edit-v2-remove:hover{color:#dc2626;border-color:#fecaca}.edit-v2-add{margin-left:8px;width:26px;height:26px;border:1px dashed #94a3b8;border-radius:999px;background:#fff;color:#475569;align-items:center;justify-content:center;cursor:pointer;font-size:18px;line-height:1;vertical-align:middle}.edit-v2-section-tools{display:none;align-items:center;gap:6px;margin:8px 0}body.edit-mode .edit-v2-section-tools{display:flex}.edit-v2-add-wide{width:auto;height:30px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:600}body.edit-mode .metric-card,body.edit-mode .report-item,body.edit-mode .task-table tbody tr,body.edit-mode .task-card,body.edit-mode .owner-card,body.edit-mode .architecture-item,body.edit-mode .architecture-v11-section{padding-right:38px}`;
+function styles(){if(document.getElementById('lorevi-edit-v2-style'))return;const s=document.createElement('style');s.id='lorevi-edit-v2-style';s.textContent=css;document.head.appendChild(s);}
+function xButton(){const b=document.createElement('button');b.type='button';b.className='edit-v2-remove';b.contentEditable='false';b.setAttribute('aria-label','Remove item');b.textContent='×';return b;}
+function mark(el,onRemove){if(!el||el.dataset.editV2Ready==='1')return;el.dataset.editV2Ready='1';el.classList.add('edit-v2-repeatable');const x=xButton();x.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();onRemove?onRemove(el):el.remove();if(typeof cleanupEmptyDynamicItems==='function')cleanupEmptyDynamicItems();enhance();});el.appendChild(x);}
+function plus(label,handler,wide=false){const b=document.createElement('button');b.type='button';b.className=`edit-v2-add${wide?' edit-v2-add-wide':''}`;b.contentEditable='false';b.textContent=wide?label:'+';b.title=label;b.setAttribute('aria-label',label);b.addEventListener('click',e=>{e.preventDefault();handler();enhance();});return b;}
+function headingAdd(h,key,handler){if(!h||h.querySelector(`[data-edit-v2-add="${key}"]`))return;const b=plus('Add item',handler);b.dataset.editV2Add=key;h.appendChild(b);}
+function editable(el){el.setAttribute('data-editable','true');if(document.body.classList.contains('edit-mode')){el.contentEditable='true';el.spellcheck=true;el.classList.add('editable-field');}}
+function addMetric(){const c=document.createElement('div');c.className='metric-card metric-card-v11';c.dataset.metricIndex='-1';c.innerHTML='<div class="metric-label">Metric</div><div class="metric-value">—</div>';c.querySelectorAll('.metric-label,.metric-value').forEach(editable);$('metricsContent').appendChild(c);$('metricsSection').classList.remove('hidden');c.querySelector('.metric-label').focus();}
+function addDynamic(key){const s=document.querySelector(`.highlight-section.${key}`);if(!s)return;const i=document.createElement('div');i.className='report-item';i.dataset.section=key;i.dataset.itemIndex='-1';i.innerHTML=`<span class="report-dot"></span><div class="editable dynamic-item-editor" data-field="${key}"><strong>New item</strong><div class="item-description">Description</div></div>`;editable(i.querySelector('.dynamic-item-editor'));s.querySelector('.item-list').appendChild(i);i.querySelector('strong').focus();}
+function addTask(){const tbody=document.querySelector('.task-table tbody');if(tbody){const r=document.createElement('tr');r.innerHTML='<td>New task</td><td>—</td><td><span class="due-badge">—</span></td>';r.querySelectorAll('td:first-child,td:nth-child(2),.due-badge').forEach(editable);tbody.appendChild(r);}const cards=document.querySelector('.task-cards');if(cards){const c=document.createElement('div');c.className='task-card';c.innerHTML='<div class="task-title">New task</div><div class="task-meta task-owner"><strong>Owner:</strong><span>—</span></div><div class="task-meta task-due"><strong>Due:</strong><span class="due-badge">—</span></div>';c.querySelectorAll('.task-title,.task-owner span,.due-badge').forEach(editable);cards.appendChild(c);}$('tasksSection').classList.remove('hidden');}
+function addOwner(){const c=document.createElement('div');c.className='owner-card';c.innerHTML='<div class="owner-avatar">—</div><div><div class="owner-name">Owner</div><div class="owner-role">Responsibility</div></div>';c.querySelectorAll('.owner-name,.owner-role').forEach(editable);$('ownersContent').appendChild(c);$('ownersSection').classList.remove('hidden');}
+function addArchItem(section){const layout=section.dataset.layout==='process'?'process':'components';const container=section.querySelector(`.architecture-${layout}`);if(!container)return;if(layout==='process'&&container.querySelector('.architecture-item')){const a=document.createElement('span');a.className='architecture-flow-arrow';a.setAttribute('aria-hidden','true');a.textContent=['ar','fa'].includes(language())?'←':'→';container.appendChild(a);}const i=document.createElement('div');i.className='architecture-item';i.dataset.itemIndex='-1';i.innerHTML='<h4>New component</h4><p>Description</p>';i.querySelectorAll('h4,p').forEach(editable);container.appendChild(i);i.querySelector('h4').focus();}
+function addArchSection(){const content=$('architectureContent');if(!content)return;const s=document.createElement('div');s.className='architecture-section architecture-v11-section';s.dataset.sectionIndex='-1';s.dataset.layout='components';s.innerHTML='<h3 class="architecture-section-title">New section</h3><div class="architecture-components"></div>';editable(s.querySelector('.architecture-section-title'));content.appendChild(s);addArchItem(s);$('architectureSection').classList.remove('hidden');}
+function removeArchItem(i){const c=i.parentElement,p=i.previousElementSibling,n=i.nextElementSibling;i.remove();if(p?.classList.contains('architecture-flow-arrow'))p.remove();else if(n?.classList.contains('architecture-flow-arrow'))n.remove();if(c&&!c.querySelector('.architecture-item'))c.closest('.architecture-v11-section')?.remove();}
+function enhance(){styles();document.querySelectorAll('.metric-card').forEach(e=>mark(e));document.querySelectorAll('.report-item[data-section]').forEach(e=>mark(e));document.querySelectorAll('.task-table tbody tr').forEach(e=>mark(e));document.querySelectorAll('.task-card').forEach(e=>mark(e));document.querySelectorAll('.owner-card').forEach(e=>mark(e));document.querySelectorAll('.architecture-item').forEach(e=>mark(e,removeArchItem));document.querySelectorAll('.architecture-v11-section').forEach(s=>{mark(s);if(!s.querySelector('.edit-v2-section-tools')){const t=document.createElement('div');t.className='edit-v2-section-tools';t.appendChild(plus('Add card',()=>addArchItem(s),true));s.insertBefore(t,s.querySelector('.architecture-process,.architecture-components'));}});headingAdd($('metricsHeading'),'metrics',addMetric);headingAdd($('tasksHeading'),'tasks',addTask);headingAdd($('ownersHeading'),'owners',addOwner);headingAdd($('architectureHeading'),'architecture-section',addArchSection);['insights','decisions','risks'].forEach(k=>{const s=document.querySelector(`.highlight-section.${k}`);if(s)headingAdd(s.querySelector('h3'),k,()=>addDynamic(k));});}
+const observer=new MutationObserver(enhance);observer.observe(document.documentElement,{childList:true,subtree:true});document.addEventListener('focusin',enhance);setTimeout(enhance,0);
 })(window);
