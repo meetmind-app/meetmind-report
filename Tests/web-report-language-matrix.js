@@ -91,9 +91,11 @@ async function renderLanguage(browser, spec, index) {
   await page.locator('#detailsToggle').click();
   await page.waitForFunction(() => !document.getElementById('detailsContent').classList.contains('hidden'));
   const details = await page.locator('#detailsContent').innerText();
-  const arrows = await page.locator('.architecture-section[data-layout="process"] .architecture-flow-arrow').allInnerTexts();
-  assert.deepStrictEqual(arrows, [spec.rtl ? '←' : '→'], `${spec.input}: process arrow direction mismatch.`);
-  assert.strictEqual(await page.locator('.architecture-section[data-layout="components"] .architecture-flow-arrow').count(), 0, `${spec.input}: components received invented arrows.`);
+  const process = page.locator('.architecture-section[data-layout="process"] .architecture-process');
+  assert.strictEqual(await process.locator('.architecture-connector').count(), 1, `${spec.input}: process connector count mismatch.`);
+  assert.strictEqual(await process.getAttribute('data-direction'), spec.rtl ? 'rtl' : 'ltr', `${spec.input}: process direction mismatch.`);
+  assert.strictEqual(await process.locator('.architecture-connector').innerText(), '', `${spec.input}: connector leaked a text arrow glyph.`);
+  assert.strictEqual(await page.locator('.architecture-section[data-layout="components"] .architecture-connector').count(), 0, `${spec.input}: components received invented connectors.`);
   assert.ok(details.includes(`Responsibility ${index}`), `${spec.input}: owner responsibility missing.`);
 
   const actionable = errors.filter(message => !/404|Failed to load resource/i.test(message));

@@ -116,9 +116,10 @@ const payload = {
   assert.ok(detailsText.includes('Принять решение по запуску'), 'Owner responsibility is not visible after Details is expanded.');
 
   const architectureText = await page.locator('#architectureContent').innerText();
-  assert.ok(architectureText.includes('→'), 'Explicit process connector is missing.');
+  assert.strictEqual(await page.locator('.architecture-section[data-layout="process"] .architecture-connector').count(), 2, 'Explicit process connectors are missing.');
+  assert.ok(!/[→←]/.test(architectureText), 'Architecture connectors must not leak as text glyphs.');
   const channels = page.locator('.architecture-section[data-layout="components"]');
-  assert.strictEqual(await channels.locator('.architecture-flow-arrow').count(), 0, 'Components must not receive directional arrows.');
+  assert.strictEqual(await channels.locator('.architecture-connector').count(), 0, 'Components must not receive directional connectors.');
   assert.ok(!architectureText.includes('system'), 'Machine architecture type leaked into localized UI.');
 
   if (errors.length) {

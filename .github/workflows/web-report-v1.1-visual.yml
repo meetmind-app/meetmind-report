@@ -10,6 +10,8 @@ on:
       - 'styles.css'
       - 'report-v1.1*.js'
       - 'report-v1.1*.css'
+      - 'architecture-v2.js'
+      - 'architecture-v2.css'
       - 'Tests/web-report-v1.1-visual.js'
       - 'Tests/web-report-e2e-corpus.js'
       - 'Tests/web-report-language-matrix.js'
@@ -49,11 +51,16 @@ jobs:
       - name: Run ten-language browser matrix
         run: node Tests/web-report-language-matrix.js
 
+      - name: Run Architecture v2 visual corpus
+        run: node Tests/architecture-v2-visual.js
+
       - name: Upload screenshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-report-v1.1-visual
-          path: Tests/artifacts/web-report-v1.1-ru.png
+          path: |
+            Tests/artifacts/web-report-v1.1-ru.png
+            Tests/artifacts/architecture-v2-*.png
           if-no-files-found: warn
           retention-days: 14
