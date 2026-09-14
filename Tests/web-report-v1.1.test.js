@@ -7,6 +7,7 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const preloadSource = fs.readFileSync(path.join(root, 'report-v1.1-preload.js'), 'utf8');
+const architectureSource = fs.readFileSync(path.join(root, 'architecture-v2.js'), 'utf8');
 const v11Source = fs.readFileSync(path.join(root, 'report-v1.1.js'), 'utf8');
 const presentationSource = fs.readFileSync(path.join(root, 'report-v1.1-presentation.js'), 'utf8');
 const indexSource = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -14,6 +15,8 @@ const indexSource = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 assert.ok(indexSource.includes('report-v1.1-preload.js'), 'v1.1 preload gate is not wired.');
 assert.ok(indexSource.includes('report-v1.1.js'), 'v1.1 consumer is not wired.');
 assert.ok(indexSource.includes('report-v1.1-presentation.js'), 'v1.1 presentation layer is not wired.');
+assert.ok(indexSource.includes('architecture-v2.js'), 'Architecture v2 is not wired.');
+assert.ok(indexSource.includes('architecture-v2.css'), 'Architecture v2 styles are not wired.');
 assert.ok(preloadSource.includes('/functions/v1/report?token='), 'Bootstrap gate must target only the initial report load.');
 
 const sandbox = {
@@ -53,6 +56,7 @@ sandbox.window = sandbox;
 sandbox.globalThis = sandbox;
 
 vm.createContext(sandbox);
+vm.runInContext(architectureSource, sandbox, { filename: 'architecture-v2.js' });
 vm.runInContext(v11Source, sandbox, { filename: 'report-v1.1.js' });
 vm.runInContext(presentationSource, sandbox, { filename: 'report-v1.1-presentation.js' });
 
@@ -114,8 +118,9 @@ const processHtml = sandbox.renderArchitecture({
     items: [{ title: 'Normalize' }, { title: 'Generate' }]
   }]
 });
-assert.ok(processHtml.includes('architecture-flow-arrow'), 'Explicit process must render a connector.');
-assert.ok(processHtml.includes('→'), 'LTR process must render a forward connector.');
+assert.ok(processHtml.includes('architecture-connector'), 'Explicit process must render a connector.');
+assert.ok(processHtml.includes('data-direction="ltr"'), 'LTR process direction is missing.');
+assert.ok(!/[→←]/.test(processHtml), 'Process connector must not depend on a text arrow glyph.');
 
 sandbox.currentLang = 'ar';
 const rtlHtml = sandbox.renderArchitecture({
@@ -125,11 +130,20 @@ const rtlHtml = sandbox.renderArchitecture({
     items: [{ title: 'A' }, { title: 'B' }]
   }]
 });
-assert.ok(rtlHtml.includes('←'), 'RTL process must reverse connector direction.');
+assert.ok(rtlHtml.includes('architecture-connector'), 'RTL process connector is missing.');
+assert.ok(rtlHtml.includes('data-direction="rtl"'), 'RTL process direction is missing.');
 
 assert.ok(
   !presentationSource.includes('relation.replace(/_/g'),
   'Machine metric relation must not be rendered as an untranslated label.'
+);
+assert.ok(
+  !presentationSource.includes('renderArchitecture ='),
+  'Presentation layer must not duplicate the canonical Architecture v2 renderer.'
+);
+assert.ok(
+  !v11Source.includes('architecture-flow-arrow'),
+  'Legacy text-arrow Architecture renderer must not remain as a second implementation.'
 );
 
 console.log('Web Report v1.1 regression passed.');

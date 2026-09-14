@@ -62,8 +62,8 @@ async function renderCase(browser, report, id, duration) {
     assert.ok(details.includes(report.owners[0].responsibility), 'v1.1 owner responsibility is not visible.');
     assert.ok(details.includes('Normalize'), 'v1.1 process start is not visible.');
     assert.ok(details.includes('Generate'), 'v1.1 process end is not visible.');
-    assert.strictEqual(await page.locator('.architecture-section[data-layout="process"] .architecture-flow-arrow').count(), 1, 'v1.1 process connector is missing or duplicated.');
-    assert.strictEqual(await page.locator('.architecture-section[data-layout="components"] .architecture-flow-arrow').count(), 0, 'v1.1 components must not receive directional arrows.');
+    assert.strictEqual(await page.locator('.architecture-section[data-layout="process"] .architecture-connector').count(), 1, 'v1.1 process connector is missing or duplicated.');
+    assert.strictEqual(await page.locator('.architecture-section[data-layout="components"] .architecture-connector').count(), 0, 'v1.1 components must not receive directional connectors.');
   } else {
     assert.ok(body.includes('По кандидатуре обещан ответ в течение пары недель.'), 'Legacy summary tail was lost.');
     assert.ok(body.includes('в течение пары недель'), 'Legacy task due date was lost.');

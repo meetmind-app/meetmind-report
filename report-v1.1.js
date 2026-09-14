@@ -39,6 +39,9 @@
   }
 
   function v11Architecture(value) {
+    if (global.LOREVIArchitectureV2?.normalize) {
+      return global.LOREVIArchitectureV2.normalize(value);
+    }
     if (Array.isArray(value)) return { sections: value };
     if (value && typeof value === 'object') {
       return {
@@ -206,37 +209,14 @@
   };
 
   renderArchitecture = function renderArchitectureV11(architecture) {
-    const root = v11Architecture(architecture);
-    const sections = root.sections;
-    if (!sections.length) return '';
-    const rtl = ['ar', 'fa'].includes(v11Language());
-    const arrow = rtl ? '←' : '→';
-
-    return sections.map((section, sectionIndex) => {
-      const items = Array.isArray(section?.items) ? section.items : [];
-      if (!items.length) return '';
-      const rawLayout = v11Text(section?.layout || section?.mode || root?.layout || root?.mode).toLowerCase();
-      const layout = ['process', 'flow', 'pipeline', 'sequence', 'workflow'].includes(rawLayout)
-        ? 'process'
-        : 'components';
-
-      const itemHtml = items.map((item, itemIndex) => {
-        const body = `
-          <div class="architecture-item" data-item-index="${itemIndex}">
-            <h4 data-editable="true">${escapeHtml(item?.title || item?.name || '')}</h4>
-            ${v11Text(item?.description || item?.text) ? `<p data-editable="true">${escapeHtml(item?.description || item?.text || '')}</p>` : ''}
-            ${v11Text(item?.type) ? `<span class="architecture-item-type">${escapeHtml(item.type)}</span>` : ''}
-          </div>`;
-        if (layout !== 'process' || itemIndex === items.length - 1) return body;
-        return `${body}<span class="architecture-flow-arrow" aria-hidden="true">${arrow}</span>`;
-      }).join('');
-
-      return `
-        <div class="architecture-section architecture-v11-section" data-section-index="${sectionIndex}" data-layout="${layout}">
-          <h3 class="architecture-section-title" data-editable="true">${escapeHtml(section?.title || '')}</h3>
-          <div class="architecture-${layout}">${itemHtml}</div>
-        </div>`;
-    }).join('');
+    if (!global.LOREVIArchitectureV2?.render) {
+      console.error('LOREVI Architecture v2 renderer is unavailable.');
+      return '';
+    }
+    return global.LOREVIArchitectureV2.render(architecture, {
+      language: v11Language(),
+      escapeHtml
+    });
   };
 
   buildReportJson = function buildReportJsonV11() {
@@ -339,31 +319,15 @@
     }
 
     function collectArchitecture() {
-      const baseSections = Array.isArray(baseReport.architecture?.sections)
-        ? baseReport.architecture.sections
-        : [];
-      const sections = [...document.querySelectorAll('#architectureContent .architecture-section')]
-        .map((section, sectionPosition) => {
-          const sourceIndex = Number(section.dataset.sectionIndex);
-          const baseSection = baseSections[Number.isInteger(sourceIndex) ? sourceIndex : sectionPosition] || {};
-          const title = cleanText(section.querySelector('.architecture-section-title')?.innerText);
-          const layout = section.dataset.layout === 'process' ? 'process' : 'components';
-          const baseItems = Array.isArray(baseSection.items) ? baseSection.items : [];
-          const items = [...section.querySelectorAll('.architecture-item')]
-            .map((item, itemPosition) => {
-              const itemIndex = Number(item.dataset.itemIndex);
-              const baseItem = baseItems[Number.isInteger(itemIndex) ? itemIndex : itemPosition] || {};
-              const titleText = cleanText(item.querySelector('h4')?.innerText);
-              const description = cleanText(item.querySelector('p')?.innerText);
-              if (!titleText && !description) return null;
-              return { ...baseItem, title: titleText, description };
-            })
-            .filter(Boolean);
-          if (!title && !items.length) return null;
-          return { ...baseSection, title, layout, items };
-        })
-        .filter(Boolean);
-      return { ...(baseReport.architecture || {}), sections };
+      if (!global.LOREVIArchitectureV2?.collect) {
+        console.error('LOREVI Architecture v2 collector is unavailable.');
+        return baseReport.architecture;
+      }
+      return global.LOREVIArchitectureV2.collect(
+        document.querySelector('#architectureContent'),
+        baseReport.architecture,
+        cleanText
+      );
     }
 
     const title = cleanText(document.querySelector('.editable-title')?.innerText);
@@ -391,7 +355,7 @@
   };
 
   global.LOREVIReportV11 = Object.freeze({
-    version: '1.1.0',
+    version: '1.2.0-architecture-v2',
     metricDisplayValue,
     metricContext
   });
