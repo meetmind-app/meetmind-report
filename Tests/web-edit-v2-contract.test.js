@@ -22,5 +22,10 @@ for (const language of ['en','ru','es','pt','tr','id','hi','ar','uz','fa']) {
 }
 assert.ok(styles.includes('@media print') && styles.includes('.edit-v2-control'), 'Edit controls are not excluded from print.');
 assert.ok(edit.includes("document.querySelectorAll('.edit-v2-control').forEach(node=>node.remove())"), 'Controls may leak into read mode.');
+const toggleBody = app.slice(app.indexOf('function toggleEditMode'), app.indexOf('function setEditable'));
+assert.ok(
+  toggleBody.indexOf('LOREVIEditV2?.sync?.(isEditMode)') < toggleBody.indexOf('saveReport()'),
+  'Edit controls must be removed before report serialization.'
+);
 
 console.log('Web Report Edit v2 static contract passed.');

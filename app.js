@@ -1164,7 +1164,15 @@ function toggleEditMode() {
         trackAnalyticsEvent('report_edit_started');
     }
 
+    document.body.classList.toggle('edit-mode', isEditMode);
+
+    setEditable('[data-editable="true"]', isEditMode);
+    window.LOREVIEditV2?.sync?.(isEditMode);
+
     if (!isEditMode) {
+        // Edit controls live next to content for fast interaction, so remove
+        // them before collecting the report JSON. This guarantees that +/×
+        // labels can never leak into user content or architecture titles.
         saveReport()
             .then(() => {
                 console.log('Report saved successfully');
@@ -1179,11 +1187,6 @@ function toggleEditMode() {
                 showFeedbackModal(t('saveErrorTitle'), t('errorTryAgain'));
             });
     }
-
-    document.body.classList.toggle('edit-mode', isEditMode);
-
-    setEditable('[data-editable="true"]', isEditMode);
-    window.LOREVIEditV2?.sync?.(isEditMode);
 
     const btn = $('editReportBtn');
     btn.textContent = isEditMode
