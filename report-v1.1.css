@@ -99,6 +99,14 @@ body.edit-mode [data-editable="true"][data-placeholder]:empty::before {
   border-radius: 999px;
 }
 
+.architecture-v2-section > .edit-v2-add[data-edit-v2-kind="architecture-item"] {
+  position: absolute;
+  z-index: 3;
+  top: 8px;
+  inset-inline-start: 8px;
+  margin-inline-start: 0;
+}
+
 .edit-v2-remove {
   position: absolute;
   z-index: 3;

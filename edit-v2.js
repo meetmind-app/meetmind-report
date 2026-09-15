@@ -123,8 +123,10 @@
       appendOnce(section,':scope > .edit-v2-remove',removeButton('architecture-section'));
       const title=section.querySelector(':scope > .architecture-section-title');
       if(title){
-        title.classList.add('edit-v2-heading');
-        appendOnce(title,'.edit-v2-add',addButton('architecture-item'));
+        // Keep controls outside contenteditable headings. Browsers preserve
+        // contenteditable=false descendants during fill(), which can pollute
+        // the serialized title or prevent replacement altogether.
+        appendOnce(section,':scope > .edit-v2-add[data-edit-v2-kind="architecture-item"]',addButton('architecture-item'));
       }
       section.querySelectorAll('.architecture-item').forEach(item=>appendOnce(item,'.edit-v2-remove',removeButton('architecture-item')));
     });

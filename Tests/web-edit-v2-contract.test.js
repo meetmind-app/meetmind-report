@@ -22,6 +22,10 @@ for (const language of ['en','ru','es','pt','tr','id','hi','ar','uz','fa']) {
 }
 assert.ok(styles.includes('@media print') && styles.includes('.edit-v2-control'), 'Edit controls are not excluded from print.');
 assert.ok(edit.includes("document.querySelectorAll('.edit-v2-control').forEach(node=>node.remove())"), 'Controls may leak into read mode.');
+assert.ok(
+  edit.includes("appendOnce(section,':scope > .edit-v2-add[data-edit-v2-kind=\"architecture-item\"]'"),
+  'Architecture add controls must stay outside editable titles.'
+);
 const toggleBody = app.slice(app.indexOf('function toggleEditMode'), app.indexOf('function setEditable'));
 assert.ok(
   toggleBody.indexOf('LOREVIEditV2?.sync?.(isEditMode)') < toggleBody.indexOf('saveReport()'),
