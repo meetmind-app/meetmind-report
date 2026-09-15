@@ -84,7 +84,7 @@ const fixture = JSON.parse(fs.readFileSync(
   await owner.locator('.owner-role').fill('Ответственность');
 
   await page.locator('#editV2BlockPicker [data-edit-v2-kind="architecture"]').click();
-  const architecture = page.locator('.architecture-section').last();
+  const architecture = page.locator('#architectureContent > .architecture-section').last();
   await architecture.locator('.architecture-section-title').fill('Новый контур');
   await architecture.locator('.architecture-item h4').fill('Новый компонент');
   await architecture.locator('.architecture-item p').fill('Описание компонента');
