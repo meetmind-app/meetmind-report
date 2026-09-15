@@ -12,6 +12,7 @@ on:
       - 'styles.css'
       - 'report-v1.1*.js'
       - 'report-v1.1*.css'
+      - 'edit-v2.js'
       - 'architecture-v2.js'
       - 'architecture-v2.css'
       - 'Supabase/**'
@@ -38,3 +39,6 @@ jobs:
 
       - name: Run report Edge Function compatibility regression
         run: node Tests/report-edge-v1.1.test.mjs
+
+      - name: Run Edit v2 static contract
+        run: node Tests/web-edit-v2-contract.test.js

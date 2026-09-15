@@ -177,7 +177,7 @@
     const sectionsHtml = blocks.map(block => {
       const html = block.items.map((item, index) => {
         if (typeof item === 'string') {
-          return `<div class="report-item" data-item-index="${index}"><span class="report-dot"></span><div>${escapeHtml(item)}</div></div>`;
+          return `<div class="report-item" data-section="${block.key}" data-item-index="${index}"><span class="report-dot"></span><div class="editable dynamic-item-editor" data-editable="true" data-field="${block.key}"><strong>${escapeHtml(item)}</strong><div class="item-description"></div></div></div>`;
         }
 
         const title = v11Text(item?.title);

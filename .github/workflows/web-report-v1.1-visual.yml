@@ -10,6 +10,7 @@ on:
       - 'styles.css'
       - 'report-v1.1*.js'
       - 'report-v1.1*.css'
+      - 'edit-v2.js'
       - 'architecture-v2.js'
       - 'architecture-v2.css'
       - 'Tests/web-report-v1.1-visual.js'
@@ -54,6 +55,9 @@ jobs:
       - name: Run Architecture v2 visual corpus
         run: node Tests/architecture-v2-visual.js
 
+      - name: Run Edit v2 add/remove/save corpus
+        run: node Tests/web-edit-v2.test.js
+
       - name: Upload screenshot
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,5 +66,6 @@ jobs:
           path: |
             Tests/artifacts/web-report-v1.1-ru.png
             Tests/artifacts/architecture-v2-*.png
+            Tests/artifacts/web-edit-v2-ru.png
           if-no-files-found: warn
           retention-days: 14

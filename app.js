@@ -1183,6 +1183,7 @@ function toggleEditMode() {
     document.body.classList.toggle('edit-mode', isEditMode);
 
     setEditable('[data-editable="true"]', isEditMode);
+    window.LOREVIEditV2?.sync?.(isEditMode);
 
     const btn = $('editReportBtn');
     btn.textContent = isEditMode
@@ -1287,7 +1288,9 @@ if (metricsGrid && !metricsGrid.querySelector('.metric-card')) {
 
   // Architecture: if the editable architecture body is emptied, hide the block.
   const architectureContent = $('architectureContent');
-  const architectureVisible = !!architectureContent && !!cleanText(architectureContent.innerText);
+  const architectureVisible = !!architectureContent && [...architectureContent.querySelectorAll(
+    '.architecture-section-title, .architecture-item h4, .architecture-item p'
+  )].some(element => !!cleanText(element.innerText));
   toggleSection('#architectureSection', architectureVisible);
 
   // Summary: no empty outer card.
@@ -1456,15 +1459,22 @@ async function saveReport() {
 
     const result = await response.json();
     const savedTitle = payload.report.meeting_title || payload.report.title || '';
-    if (currentMeeting && savedTitle) {
-        currentMeeting.title = savedTitle;
-        document.title = `${savedTitle} — LOREVI`;
+    if (currentMeeting) {
+        currentMeeting.report = payload.report;
+        if (savedTitle) {
+            currentMeeting.title = savedTitle;
+            document.title = `${savedTitle} — LOREVI`;
+        }
+        $('statsSection').innerHTML = '';
+        $('statsSection').classList.add('hidden');
+        renderStats(payload.report);
     }
     return result;
 }
 
  function applyEditMode() {
     setEditable('[data-editable="true"]', isEditMode);
+    window.LOREVIEditV2?.sync?.(isEditMode);
 }
 
 function toggleSection(selector, visible) {
