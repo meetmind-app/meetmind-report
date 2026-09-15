@@ -1164,7 +1164,15 @@ function toggleEditMode() {
         trackAnalyticsEvent('report_edit_started');
     }
 
+    document.body.classList.toggle('edit-mode', isEditMode);
+
+    setEditable('[data-editable="true"]', isEditMode);
+    window.LOREVIEditV2?.sync?.(isEditMode);
+
     if (!isEditMode) {
+        // Edit controls live next to content for fast interaction, so remove
+        // them before collecting the report JSON. This guarantees that +/×
+        // labels can never leak into user content or architecture titles.
         saveReport()
             .then(() => {
                 console.log('Report saved successfully');
@@ -1179,10 +1187,6 @@ function toggleEditMode() {
                 showFeedbackModal(t('saveErrorTitle'), t('errorTryAgain'));
             });
     }
-
-    document.body.classList.toggle('edit-mode', isEditMode);
-
-    setEditable('[data-editable="true"]', isEditMode);
 
     const btn = $('editReportBtn');
     btn.textContent = isEditMode
@@ -1287,7 +1291,9 @@ if (metricsGrid && !metricsGrid.querySelector('.metric-card')) {
 
   // Architecture: if the editable architecture body is emptied, hide the block.
   const architectureContent = $('architectureContent');
-  const architectureVisible = !!architectureContent && !!cleanText(architectureContent.innerText);
+  const architectureVisible = !!architectureContent && [...architectureContent.querySelectorAll(
+    '.architecture-section-title, .architecture-item h4, .architecture-item p'
+  )].some(element => !!cleanText(element.innerText));
   toggleSection('#architectureSection', architectureVisible);
 
   // Summary: no empty outer card.
@@ -1456,15 +1462,22 @@ async function saveReport() {
 
     const result = await response.json();
     const savedTitle = payload.report.meeting_title || payload.report.title || '';
-    if (currentMeeting && savedTitle) {
-        currentMeeting.title = savedTitle;
-        document.title = `${savedTitle} — LOREVI`;
+    if (currentMeeting) {
+        currentMeeting.report = payload.report;
+        if (savedTitle) {
+            currentMeeting.title = savedTitle;
+            document.title = `${savedTitle} — LOREVI`;
+        }
+        $('statsSection').innerHTML = '';
+        $('statsSection').classList.add('hidden');
+        renderStats(payload.report);
     }
     return result;
 }
 
  function applyEditMode() {
     setEditable('[data-editable="true"]', isEditMode);
+    window.LOREVIEditV2?.sync?.(isEditMode);
 }
 
 function toggleSection(selector, visible) {
